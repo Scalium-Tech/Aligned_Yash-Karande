@@ -1,0 +1,244 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Aligned Landing Page Design System
+   Modern & Elegant aesthetic with purple/violet colors
+   All colors MUST be HSL
+*/
+
+@layer base {
+  :root {
+    /* Base colors - soft lavender-tinted background */
+    --background: 270 30% 98%;
+    --foreground: 260 25% 15%;
+
+    /* Card surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 260 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 260 25% 15%;
+
+    /* Primary - Rich Purple */
+    --primary: 265 60% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Soft Lavender */
+    --secondary: 270 40% 94%;
+    --secondary-foreground: 265 50% 35%;
+
+    /* Muted - Cool gray with purple hint */
+    --muted: 270 15% 94%;
+    --muted-foreground: 260 15% 45%;
+
+    /* Accent - Light violet */
+    --accent: 280 35% 92%;
+    --accent-foreground: 265 50% 35%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 265 20% 88%;
+    --input: 265 20% 88%;
+    --ring: 265 60% 55%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens for Aligned - Purple Theme */
+    --purple: 265 60% 55%;
+    --purple-light: 270 40% 95%;
+    --purple-dark: 265 65% 40%;
+    --violet: 280 45% 65%;
+    --violet-light: 280 40% 94%;
+    --lavender: 270 30% 75%;
+    --cream: 270 30% 98%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(265 60% 55%) 0%, hsl(280 55% 60%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(270 40% 96%) 0%, hsl(270 30% 98%) 50%, hsl(280 35% 94%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(270 20% 98%) 100%);
+    --gradient-glow: radial-gradient(circle, hsl(265 60% 55% / 0.15) 0%, transparent 70%);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 260 25% 15%;
+    --sidebar-primary: 265 60% 55%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 270 40% 94%;
+    --sidebar-accent-foreground: 265 50% 35%;
+    --sidebar-border: 265 20% 88%;
+    --sidebar-ring: 265 60% 55%;
+  }
+
+  .dark {
+    --background: 260 25% 8%;
+    --foreground: 270 20% 95%;
+
+    --card: 260 20% 13%;
+    --card-foreground: 270 20% 95%;
+
+    --popover: 260 20% 13%;
+    --popover-foreground: 270 20% 95%;
+
+    --primary: 265 70% 60%;
+    --primary-foreground: 260 25% 8%;
+
+    /* Secondary - Deep Violet */
+    --secondary: 265 35% 20%;
+    --secondary-foreground: 265 55% 80%;
+
+    --muted: 260 20% 16%;
+    --muted-foreground: 260 10% 75%;
+
+    --accent: 265 35% 22%;
+    --accent-foreground: 265 55% 80%;
+
+    --destructive: 0 62.8% 45%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 260 15% 22%;
+    --input: 260 15% 22%;
+    --ring: 265 70% 60%;
+
+    --purple: 265 70% 60%;
+    --purple-light: 265 35% 20%;
+    --purple-dark: 265 60% 70%;
+    --violet: 280 50% 55%;
+    --violet-light: 280 30% 22%;
+    --lavender: 270 25% 50%;
+    --cream: 260 25% 8%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(265 70% 60%) 0%, hsl(280 60% 55%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(260 25% 10%) 0%, hsl(260 25% 8%) 50%, hsl(265 25% 12%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(260 20% 15%) 0%, hsl(260 20% 12%) 100%);
+    --gradient-glow: radial-gradient(circle, hsl(265 70% 60% / 0.12) 0%, transparent 70%);
+
+    --sidebar-background: 260 25% 10%;
+    --sidebar-foreground: 270 20% 95%;
+    --sidebar-primary: 265 70% 60%;
+    --sidebar-primary-foreground: 260 25% 8%;
+    --sidebar-accent: 265 35% 20%;
+    --sidebar-accent-foreground: 265 55% 80%;
+    --sidebar-border: 260 15% 22%;
+    --sidebar-ring: 265 70% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Animation utilities for scroll reveal */
+@layer utilities {
+  .animate-fade-up {
+    animation: fadeUp 0.6s ease-out forwards;
+  }
+
+  .animate-fade-up-delay-1 {
+    animation: fadeUp 0.6s ease-out 0.1s forwards;
+  }
+
+  .animate-fade-up-delay-2 {
+    animation: fadeUp 0.6s ease-out 0.2s forwards;
+  }
+
+  .animate-fade-up-delay-3 {
+    animation: fadeUp 0.6s ease-out 0.3s forwards;
+  }
+
+  .animate-fade-up-delay-4 {
+    animation: fadeUp 0.6s ease-out 0.4s forwards;
+  }
+
+  .opacity-0-initial {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .glass {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50 dark:bg-card/60 dark:border-primary/10;
+  }
+
+  .glass-strong {
+    @apply bg-card/95 backdrop-blur-2xl border border-border/30 dark:bg-card/80 dark:border-primary/15;
+  }
+
+  .glass-card {
+    @apply bg-gradient-to-br from-card to-card/80 backdrop-blur-xl border border-border/50 dark:from-card dark:to-muted/50 dark:border-primary/10;
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-dark;
+  }
+
+  .gradient-border {
+    @apply relative;
+  }
+
+  .gradient-border::before {
+    content: '';
+    @apply absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/20 to-violet/20 -z-10;
+    padding: 1px;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5;
+  }
+
+  .glow {
+    @apply relative;
+  }
+
+  .glow::after {
+    content: '';
+    @apply absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300;
+    background: var(--gradient-glow);
+  }
+
+  .glow:hover::after {
+    @apply opacity-100;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@layer utilities {
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--primary) / 0) 0%,
+      hsl(var(--primary) / 0.1) 50%,
+      hsl(var(--primary) / 0) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 3s infinite;
+  }
+}
