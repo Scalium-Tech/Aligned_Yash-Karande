@@ -53,7 +53,7 @@ export function GoalsChallenges() {
         dismissCelebration,
     } = useGoals(user?.id);
 
-    const { analytics } = useAnalytics(user?.id);
+    const { analytics, logChallengeCheckIn } = useAnalytics(user?.id);
     const { journal } = useJournal(user?.id);
 
     const [showNewChallenge, setShowNewChallenge] = useState(false);
@@ -624,7 +624,10 @@ Return only JSON.`;
 
                                     {/* Check In Button */}
                                     <Button
-                                        onClick={() => checkInChallenge(challenge.id)}
+                                        onClick={() => {
+                                            checkInChallenge(challenge.id);
+                                            logChallengeCheckIn(activeChallenges.length);
+                                        }}
                                         disabled={checkedToday}
                                         variant={checkedToday ? 'outline' : 'default'}
                                         size="sm"

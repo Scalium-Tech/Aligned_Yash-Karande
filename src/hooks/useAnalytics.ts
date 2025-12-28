@@ -12,6 +12,8 @@ interface DailyActivity {
     energyCheckin: 'high' | 'medium' | 'low' | null;
     habitsCompleted: number;
     habitsTotal: number;
+    challengeCheckIns: number;
+    activeChallenges: number;
 }
 
 interface AnalyticsData {
@@ -37,6 +39,8 @@ function getDefaultDailyActivity(date: string): DailyActivity {
         energyCheckin: null,
         habitsCompleted: 0,
         habitsTotal: 0,
+        challengeCheckIns: 0,
+        activeChallenges: 0,
     };
 }
 
@@ -145,6 +149,13 @@ function calculateIdentityScore(dailyActivities: Record<string, DailyActivity>):
     if (todayActivity.focusSessions > 0) {
         totalActions += todayActivity.focusSessions;
         completedActions += todayActivity.focusSessions;
+    }
+
+    // Challenge check-ins count towards identity score
+    // Each active challenge is a potential action, each check-in is a completed action
+    if (todayActivity.activeChallenges > 0) {
+        totalActions += todayActivity.activeChallenges;
+        completedActions += todayActivity.challengeCheckIns;
     }
 
     // If user has no planned actions today, return 0
@@ -291,6 +302,25 @@ export function useAnalytics(userId?: string) {
         window.dispatchEvent(new CustomEvent('analytics-updated'));
     }, [userId]);
 
+    const logChallengeCheckIn = useCallback((activeChallengesCount: number = 1) => {
+        const todayKey = getTodayKey();
+        const currentData = loadAnalytics(userId);
+        const updated = { ...currentData };
+
+        if (!updated.dailyActivities[todayKey]) {
+            updated.dailyActivities[todayKey] = getDefaultDailyActivity(todayKey);
+        }
+
+        updated.dailyActivities[todayKey].challengeCheckIns++;
+        updated.dailyActivities[todayKey].activeChallenges = activeChallengesCount;
+        updated.currentStreak = calculateStreak(updated.dailyActivities);
+        updated.longestStreak = Math.max(updated.longestStreak, updated.currentStreak);
+
+        saveAnalytics(updated, userId);
+        setAnalytics(updated);
+        window.dispatchEvent(new CustomEvent('analytics-updated'));
+    }, [userId]);
+
     const getWeeklyData = useCallback(() => {
         const last7Days = getLastNDays(7);
         return last7Days.map(date => {
@@ -314,6 +344,7 @@ export function useAnalytics(userId?: string) {
         logFocusSession,
         logTaskComplete,
         logHabitComplete,
+        logChallengeCheckIn,
         getWeeklyData,
     };
 }
