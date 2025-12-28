@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useJournal } from '@/hooks/useJournal';
 import { useGoals } from '@/hooks/useGoals';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserStorageKey } from '@/lib/userStorage';
 
 interface WeekComparison {
     focusChange: number;
@@ -17,9 +19,10 @@ interface WeekComparison {
 }
 
 export function WeeklyInsights() {
-    const { analytics, getWeeklyData } = useAnalytics();
-    const { getWeeklySummary, getRecentEntries } = useJournal();
-    const { getActiveChallenges } = useGoals();
+    const { user } = useAuth();
+    const { analytics, getWeeklyData } = useAnalytics(user?.id);
+    const { getWeeklySummary, getRecentEntries } = useJournal(user?.id);
+    const { getActiveChallenges } = useGoals(user?.id);
 
     const [aiSummary, setAiSummary] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +35,8 @@ export function WeeklyInsights() {
 
     // Calculate quarterly goal completions for this week
     useEffect(() => {
-        const stored = localStorage.getItem('aligned_quarterly_completions');
+        const key = getUserStorageKey('aligned_quarterly_completions', user?.id);
+        const stored = localStorage.getItem(key);
         if (stored) {
             try {
                 const completions = JSON.parse(stored);
@@ -50,8 +54,10 @@ export function WeeklyInsights() {
             } catch (e) {
                 console.error('Error calculating quarterly progress:', e);
             }
+        } else {
+            setQuarterlyProgress(0);
         }
-    }, []);
+    }, [user?.id]);
 
     // Calculate weekly stats
     const totalFocusMinutes = weeklyData.reduce((sum, d) => sum + d.focusMinutes, 0);

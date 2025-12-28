@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Target, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAuth } from '@/contexts/AuthContext';
 
 function getOrdinalDay(n: number): string {
     const s = ['th', 'st', 'nd', 'rd'];
@@ -9,7 +10,8 @@ function getOrdinalDay(n: number): string {
 }
 
 export function IdentityScore() {
-    const { identityScore, analytics } = useAnalytics();
+    const { user } = useAuth();
+    const { identityScore, analytics } = useAnalytics(user?.id);
 
     const getScoreColor = (score: number) => {
         if (score >= 70) return 'text-emerald-500';

@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useFocusSessions } from '@/hooks/useFocusSessions';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserStorageKey } from '@/lib/userStorage';
 
 interface FocusTask {
     id: string;
@@ -46,8 +48,9 @@ interface FocusTimerProviderProps {
 }
 
 export function FocusTimerProvider({ children }: FocusTimerProviderProps) {
-    const { startSession, completeSession, cancelSession } = useFocusSessions();
-    const { logFocusSession } = useAnalytics();
+    const { user } = useAuth();
+    const { startSession, completeSession, cancelSession } = useFocusSessions(user?.id);
+    const { logFocusSession } = useAnalytics(user?.id);
 
     const [isRunning, setIsRunning] = useState(false);
     const [timeRemaining, setTimeRemaining] = useState(0);
@@ -61,11 +64,18 @@ export function FocusTimerProvider({ children }: FocusTimerProviderProps) {
 
     // Load tasks from localStorage
     useEffect(() => {
-        const savedTasks = localStorage.getItem('aligned_focus_tasks');
+        const key = getUserStorageKey('aligned_focus_tasks', user?.id);
+        const savedTasks = localStorage.getItem(key);
         if (savedTasks) {
-            setFocusTasks(JSON.parse(savedTasks));
+            try {
+                setFocusTasks(JSON.parse(savedTasks));
+            } catch {
+                setFocusTasks([]);
+            }
+        } else {
+            setFocusTasks([]);
         }
-    }, []);
+    }, [user?.id]);
 
     // Timer tick
     useEffect(() => {
@@ -169,10 +179,11 @@ export function FocusTimerProvider({ children }: FocusTimerProviderProps) {
             const updated = prev.map(t =>
                 t.id === taskId ? { ...t, completed: true } : t
             );
-            localStorage.setItem('aligned_focus_tasks', JSON.stringify(updated));
+            const key = getUserStorageKey('aligned_focus_tasks', user?.id);
+            localStorage.setItem(key, JSON.stringify(updated));
             return updated;
         });
-    }, []);
+    }, [user?.id]);
 
     const value: FocusTimerContextType = {
         isRunning,

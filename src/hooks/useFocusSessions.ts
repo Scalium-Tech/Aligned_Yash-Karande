@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getUserStorageKey } from '@/lib/userStorage';
 
 interface FocusSession {
     id: string;
@@ -19,8 +20,9 @@ interface FocusData {
 
 const FOCUS_KEY = 'aligned_focus_sessions';
 
-function loadFocusData(): FocusData {
-    const stored = localStorage.getItem(FOCUS_KEY);
+function loadFocusData(userId?: string): FocusData {
+    const key = getUserStorageKey(FOCUS_KEY, userId);
+    const stored = localStorage.getItem(key);
     if (!stored) {
         return { sessions: [], totalMinutes: 0, totalSessions: 0, pomodoroCount: 0 };
     }
@@ -31,17 +33,24 @@ function loadFocusData(): FocusData {
     }
 }
 
-function saveFocusData(data: FocusData): void {
-    localStorage.setItem(FOCUS_KEY, JSON.stringify(data));
+function saveFocusData(data: FocusData, userId?: string): void {
+    const key = getUserStorageKey(FOCUS_KEY, userId);
+    localStorage.setItem(key, JSON.stringify(data));
 }
 
 function getTodayKey(): string {
     return new Date().toISOString().split('T')[0];
 }
 
-export function useFocusSessions() {
-    const [focusData, setFocusData] = useState<FocusData>(() => loadFocusData());
+export function useFocusSessions(userId?: string) {
+    const [focusData, setFocusData] = useState<FocusData>(() => loadFocusData(userId));
     const [activeSession, setActiveSession] = useState<FocusSession | null>(null);
+
+    // Reload data when userId changes
+    useEffect(() => {
+        const newData = loadFocusData(userId);
+        setFocusData(newData);
+    }, [userId]);
 
     const startSession = useCallback((duration: number, type: 'focus' | 'pomodoro' = 'focus') => {
         const session: FocusSession = {
@@ -76,11 +85,11 @@ export function useFocusSessions() {
                 : focusData.pomodoroCount,
         };
 
-        saveFocusData(updated);
+        saveFocusData(updated, userId);
         setFocusData(updated);
         setActiveSession(null);
         return completedSession;
-    }, [activeSession, focusData]);
+    }, [activeSession, focusData, userId]);
 
     const cancelSession = useCallback(() => {
         setActiveSession(null);

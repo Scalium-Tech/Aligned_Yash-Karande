@@ -16,13 +16,13 @@ import {
     Heart
 } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface SidebarProps {
     activeSection: string;
     onSectionChange: (section: string) => void;
     onLogout: () => void;
-    userName?: string;
 }
 
 const navItems = [
@@ -39,9 +39,10 @@ const bottomItems = [
     { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
-export function Sidebar({ activeSection, onSectionChange, onLogout, userName }: SidebarProps) {
+export function Sidebar({ activeSection, onSectionChange, onLogout }: SidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
-    const { analytics, identityScore } = useAnalytics();
+    const { user } = useAuth();
+    const { analytics, identityScore } = useAnalytics(user?.id);
 
     return (
         <motion.aside

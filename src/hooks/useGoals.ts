@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getUserStorageKey } from '@/lib/userStorage';
 
 interface Challenge {
     id: string;
@@ -44,8 +45,9 @@ const defaultBadges: Badge[] = [
     { id: 'consistency-king', name: 'Consistency King', description: 'Complete a 90-day challenge', icon: '👑', requirement: { type: 'challenge', value: 90 } },
 ];
 
-function loadGoalsData(): GoalsData {
-    const stored = localStorage.getItem(GOALS_KEY);
+function loadGoalsData(userId?: string): GoalsData {
+    const key = getUserStorageKey(GOALS_KEY, userId);
+    const stored = localStorage.getItem(key);
     if (!stored) {
         return { challenges: [], badges: defaultBadges, completedChallenges: 0 };
     }
@@ -63,18 +65,25 @@ function loadGoalsData(): GoalsData {
     }
 }
 
-function saveGoalsData(data: GoalsData): void {
-    localStorage.setItem(GOALS_KEY, JSON.stringify(data));
+function saveGoalsData(data: GoalsData, userId?: string): void {
+    const key = getUserStorageKey(GOALS_KEY, userId);
+    localStorage.setItem(key, JSON.stringify(data));
 }
 
 function getTodayKey(): string {
     return new Date().toISOString().split('T')[0];
 }
 
-export function useGoals() {
-    const [goalsData, setGoalsData] = useState<GoalsData>(() => loadGoalsData());
+export function useGoals(userId?: string) {
+    const [goalsData, setGoalsData] = useState<GoalsData>(() => loadGoalsData(userId));
     const [showCelebration, setShowCelebration] = useState(false);
     const [celebrationMessage, setCelebrationMessage] = useState('');
+
+    // Reload data when userId changes
+    useEffect(() => {
+        const newData = loadGoalsData(userId);
+        setGoalsData(newData);
+    }, [userId]);
 
     const createChallenge = useCallback((title: string, description: string, days: number = 90) => {
         const startDate = getTodayKey();
@@ -93,146 +102,171 @@ export function useGoals() {
             isActive: true,
         };
 
-        const updated = {
-            ...goalsData,
-            challenges: [challenge, ...goalsData.challenges],
-        };
+        setGoalsData(prev => {
+            const updated = {
+                ...prev,
+                challenges: [challenge, ...prev.challenges],
+            };
+            saveGoalsData(updated);
 
-        saveGoalsData(updated);
-        setGoalsData(updated);
-
-        // Check for challenger badge
-        checkBadgeUnlock('challenge', 1);
+            // Check for challenger badge inline
+            const badgeUpdated = { ...updated };
+            badgeUpdated.badges = updated.badges.map(badge => {
+                if (!badge.earnedAt && badge.requirement.type === 'challenge' && 1 >= badge.requirement.value) {
+                    return { ...badge, earnedAt: new Date().toISOString() };
+                }
+                return badge;
+            });
+            if (JSON.stringify(badgeUpdated.badges) !== JSON.stringify(updated.badges)) {
+                saveGoalsData(badgeUpdated);
+                return badgeUpdated;
+            }
+            return updated;
+        });
 
         return challenge;
-    }, [goalsData]);
+    }, []);
 
     const checkInChallenge = useCallback((challengeId: string) => {
         const todayKey = getTodayKey();
 
-        const updated = {
-            ...goalsData,
-            challenges: goalsData.challenges.map(c => {
-                if (c.id === challengeId && !c.checkIns.includes(todayKey)) {
-                    const newCheckIns = [...c.checkIns, todayKey];
-                    const newDaysCompleted = newCheckIns.length;
+        setGoalsData(prev => {
+            const updated = {
+                ...prev,
+                challenges: prev.challenges.map(c => {
+                    if (c.id === challengeId && !c.checkIns.includes(todayKey)) {
+                        const newCheckIns = [...c.checkIns, todayKey];
+                        const newDaysCompleted = newCheckIns.length;
 
-                    // Check if challenge is complete
-                    const isComplete = newDaysCompleted >= c.totalDays;
+                        // Check if challenge is complete
+                        const isComplete = newDaysCompleted >= c.totalDays;
 
-                    if (isComplete) {
-                        setCelebrationMessage(`🎉 Congratulations! You completed "${c.title}"!`);
-                        setShowCelebration(true);
+                        if (isComplete) {
+                            setCelebrationMessage(`🎉 Congratulations! You completed "${c.title}"!`);
+                            setShowCelebration(true);
+                        }
+
+                        return {
+                            ...c,
+                            checkIns: newCheckIns,
+                            daysCompleted: newDaysCompleted,
+                            isActive: !isComplete,
+                            completedAt: isComplete ? new Date().toISOString() : undefined,
+                        };
                     }
+                    return c;
+                }),
+            };
 
-                    return {
-                        ...c,
-                        checkIns: newCheckIns,
-                        daysCompleted: newDaysCompleted,
-                        isActive: !isComplete,
-                        completedAt: isComplete ? new Date().toISOString() : undefined,
-                    };
-                }
-                return c;
-            }),
-        };
+            // Count completed challenges
+            const completedCount = updated.challenges.filter(c => c.completedAt).length;
+            updated.completedChallenges = completedCount;
 
-        // Count completed challenges
-        const completedCount = updated.challenges.filter(c => c.completedAt).length;
-        updated.completedChallenges = completedCount;
+            // Check for milestone badge inline
+            if (completedCount > 0) {
+                updated.badges = updated.badges.map(badge => {
+                    if (!badge.earnedAt && badge.requirement.type === 'challenge' && 90 >= badge.requirement.value) {
+                        return { ...badge, earnedAt: new Date().toISOString() };
+                    }
+                    return badge;
+                });
+            }
 
-        saveGoalsData(updated);
-        setGoalsData(updated);
-
-        // Check for milestone badge
-        if (completedCount > 0) {
-            checkBadgeUnlock('challenge', 90);
-        }
-    }, [goalsData]);
+            saveGoalsData(updated);
+            return updated;
+        });
+    }, []);
 
     const deleteChallenge = useCallback((challengeId: string) => {
-        const updated = {
-            ...goalsData,
-            challenges: goalsData.challenges.filter(c => c.id !== challengeId),
-        };
-        saveGoalsData(updated);
-        setGoalsData(updated);
-    }, [goalsData]);
+        setGoalsData(prev => {
+            const updated = {
+                ...prev,
+                challenges: prev.challenges.filter(c => c.id !== challengeId),
+            };
+            saveGoalsData(updated);
+            return updated;
+        });
+    }, []);
 
     const checkBadgeUnlock = useCallback((type: Badge['requirement']['type'], value: number) => {
-        const updated = { ...goalsData };
         let badgeUnlocked = false;
+        setGoalsData(prev => {
+            const updated = { ...prev };
+            updated.badges = prev.badges.map(badge => {
+                if (!badge.earnedAt && badge.requirement.type === type && value >= badge.requirement.value) {
+                    badgeUnlocked = true;
+                    return { ...badge, earnedAt: new Date().toISOString() };
+                }
+                return badge;
+            });
 
-        updated.badges = updated.badges.map(badge => {
-            if (!badge.earnedAt && badge.requirement.type === type && value >= badge.requirement.value) {
-                badgeUnlocked = true;
-                return { ...badge, earnedAt: new Date().toISOString() };
+            if (badgeUnlocked) {
+                saveGoalsData(updated);
+                return updated;
             }
-            return badge;
+            return prev;
         });
-
-        if (badgeUnlocked) {
-            saveGoalsData(updated);
-            setGoalsData(updated);
-        }
 
         return badgeUnlocked;
-    }, [goalsData]);
+    }, []);
 
     const checkAllBadges = useCallback((stats: { streak: number; focus: number; tasks: number; journal: number }) => {
-        let anyUnlocked = false;
-        const updated = { ...goalsData };
+        setGoalsData(prev => {
+            let anyUnlocked = false;
+            const updated = { ...prev };
 
-        updated.badges = updated.badges.map(badge => {
-            if (badge.earnedAt) return badge;
+            updated.badges = prev.badges.map(badge => {
+                if (badge.earnedAt) return badge;
 
-            let shouldUnlock = false;
-            switch (badge.requirement.type) {
-                case 'streak':
-                    shouldUnlock = stats.streak >= badge.requirement.value;
-                    break;
-                case 'focus':
-                    shouldUnlock = stats.focus >= badge.requirement.value;
-                    break;
-                case 'tasks':
-                    shouldUnlock = stats.tasks >= badge.requirement.value;
-                    break;
-                case 'journal':
-                    shouldUnlock = stats.journal >= badge.requirement.value;
-                    break;
-                case 'challenge':
-                    shouldUnlock = goalsData.completedChallenges >= 1 && badge.requirement.value === 90;
-                    break;
+                let shouldUnlock = false;
+                switch (badge.requirement.type) {
+                    case 'streak':
+                        shouldUnlock = stats.streak >= badge.requirement.value;
+                        break;
+                    case 'focus':
+                        shouldUnlock = stats.focus >= badge.requirement.value;
+                        break;
+                    case 'tasks':
+                        shouldUnlock = stats.tasks >= badge.requirement.value;
+                        break;
+                    case 'journal':
+                        shouldUnlock = stats.journal >= badge.requirement.value;
+                        break;
+                    case 'challenge':
+                        shouldUnlock = prev.completedChallenges >= 1 && badge.requirement.value === 90;
+                        break;
+                }
+
+                if (shouldUnlock) {
+                    anyUnlocked = true;
+                    return { ...badge, earnedAt: new Date().toISOString() };
+                }
+                return badge;
+            });
+
+            if (anyUnlocked) {
+                saveGoalsData(updated);
+                return updated;
             }
-
-            if (shouldUnlock) {
-                anyUnlocked = true;
-                return { ...badge, earnedAt: new Date().toISOString() };
-            }
-            return badge;
+            return prev;
         });
-
-        if (anyUnlocked) {
-            saveGoalsData(updated);
-            setGoalsData(updated);
-        }
-    }, [goalsData]);
+    }, []);
 
     const getActiveChallenges = useCallback(() => {
         return goalsData.challenges.filter(c => c.isActive);
-    }, [goalsData]);
+    }, [goalsData.challenges]);
 
     const getCompletedChallenges = useCallback(() => {
         return goalsData.challenges.filter(c => c.completedAt);
-    }, [goalsData]);
+    }, [goalsData.challenges]);
 
     const getEarnedBadges = useCallback(() => {
         return goalsData.badges.filter(b => b.earnedAt);
-    }, [goalsData]);
+    }, [goalsData.badges]);
 
     const getUnearnedBadges = useCallback(() => {
         return goalsData.badges.filter(b => !b.earnedAt);
-    }, [goalsData]);
+    }, [goalsData.badges]);
 
     const dismissCelebration = useCallback(() => {
         setShowCelebration(false);

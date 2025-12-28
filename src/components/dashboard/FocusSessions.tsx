@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Play, Pause, RotateCcw, CheckCircle2, Clock, Flame,
@@ -10,15 +10,18 @@ import { useFocusSessions } from '@/hooks/useFocusSessions';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useGoals } from '@/hooks/useGoals';
 import { useFocusTimer } from '@/contexts/FocusTimerContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserStorageKey } from '@/lib/userStorage';
 
 interface FocusSessionsProps {
     userIdentities?: { name: string; selected?: boolean }[];
 }
 
 export function FocusSessions({ userIdentities }: FocusSessionsProps) {
-    const { focusData, getTodayStats, getWeekStats } = useFocusSessions();
-    const { analytics, getWeeklyData } = useAnalytics();
-    const { getActiveChallenges } = useGoals();
+    const { user } = useAuth();
+    const { focusData, getTodayStats, getWeekStats } = useFocusSessions(user?.id);
+    const { analytics, getWeeklyData } = useAnalytics(user?.id);
+    const { getActiveChallenges } = useGoals(user?.id);
     const {
         isRunning,
         timeRemaining,
@@ -52,15 +55,18 @@ export function FocusSessions({ userIdentities }: FocusSessionsProps) {
 
     // Load quarterly completions (synchronized with Analytics logic)
     useEffect(() => {
-        const stored = localStorage.getItem('aligned_quarterly_completions');
+        const key = getUserStorageKey('aligned_quarterly_completions', user?.id);
+        const stored = localStorage.getItem(key);
         if (stored) {
             try {
                 setQuarterlyCompletions(JSON.parse(stored));
             } catch (e) {
                 console.error('Error loading quarterly completions for focus chart:', e);
             }
+        } else {
+            setQuarterlyCompletions({});
         }
-    }, []);
+    }, [user?.id]);
 
     // Get the last 7 dates for precise daily mapping
     const last7DaysStrings = [];
@@ -93,7 +99,7 @@ export function FocusSessions({ userIdentities }: FocusSessionsProps) {
     });
 
     // Generate identity-based focus tasks
-    const generateFocusTasks = async () => {
+    const generateFocusTasks = useCallback(async () => {
         const selectedIdentity = userIdentities?.find(i => i.selected)?.name || 'professional';
         const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
 
@@ -149,21 +155,22 @@ Return only JSON, no other text.`;
 
                 const tasks = JSON.parse(text);
                 setFocusTasks(tasks);
-                localStorage.setItem('aligned_focus_tasks', JSON.stringify(tasks));
+                const key = getUserStorageKey('aligned_focus_tasks', user?.id);
+                localStorage.setItem(key, JSON.stringify(tasks));
             }
         } catch (error) {
             console.error('Error generating tasks:', error);
         } finally {
             setIsGeneratingTasks(false);
         }
-    };
+    }, [userIdentities, setFocusTasks, user?.id]);
 
     // Load or generate tasks on mount
     useEffect(() => {
         if (focusTasks.length === 0 && userIdentities && userIdentities.length > 0) {
             generateFocusTasks();
         }
-    }, [userIdentities]);
+    }, [userIdentities, focusTasks.length, generateFocusTasks]);
 
     const handleStartTask = (task: typeof focusTasks[0]) => {
         startTimer(task.duration, task, 'focus');
@@ -185,7 +192,8 @@ Return only JSON, no other text.`;
 
         const updatedTasks = [...focusTasks, newTask];
         setFocusTasks(updatedTasks);
-        localStorage.setItem('aligned_focus_tasks', JSON.stringify(updatedTasks));
+        const key = getUserStorageKey('aligned_focus_tasks', user?.id);
+        localStorage.setItem(key, JSON.stringify(updatedTasks));
 
         setNewTaskTitle('');
         setNewTaskDuration(30);

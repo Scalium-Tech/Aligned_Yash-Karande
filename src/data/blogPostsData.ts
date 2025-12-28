@@ -19,8 +19,8 @@ export const blogPosts: BlogPost[] = [
     title: 'The Power of Identity-Based Habits: Why Who You Are Matters More Than What You Do',
     excerpt: 'Discover how shifting your focus from goals to identity can transform your approach to personal growth and make lasting change effortless.',
     category: 'Personal Growth',
-    author: 'Aditya Sharma',
-    authorBio: 'Co-founder of Kairos & habit psychology enthusiast with 10+ years of research experience.',
+    author: 'Yash Karande',
+    authorBio: 'Founder of Aligned & personal growth enthusiast passionate about helping people become their best selves.',
     date: 'December 20, 2024',
     readTime: '8 min read',
     featured: true,
@@ -99,9 +99,9 @@ Ready to try this approach? Here's a simple exercise:
 
 Remember: You don't have to be perfect. Every action counts as a vote. The goal isn't 100% consistency—it's to tip the balance in favor of your desired identity.
 
-## The Kairos Approach
+## The Aligned Approach
 
-At Kairos, we've built this philosophy into our core experience. When you set a vision, you're not just setting goals—you're defining who you want to become.
+At Aligned, we've built this philosophy into our core experience. When you set a vision, you're not just setting goals—you're defining who you want to become.
 
 Our AI then helps break down that vision into daily actions that naturally align with your desired identity. Each completed task is a vote for the person you're becoming.
 
@@ -118,8 +118,8 @@ This isn't about productivity hacking or optimization. It's about becoming the b
     title: 'Calm Productivity: How to Get More Done Without Burning Out',
     excerpt: 'Learn the art of sustainable productivity that respects your energy and helps you achieve your goals without sacrificing your wellbeing.',
     category: 'Productivity',
-    author: 'Priya Nair',
-    authorBio: 'Productivity coach and mindfulness practitioner helping professionals find balance.',
+    author: 'Yash Karande',
+    authorBio: 'Founder of Aligned & personal growth enthusiast passionate about helping people become their best selves.',
     date: 'December 18, 2024',
     readTime: '6 min read',
     featured: true,
@@ -239,8 +239,8 @@ The tortoise really does beat the hare—not through speed, but through sustaina
     title: 'Designing a Morning Routine That Aligns With Your Values',
     excerpt: 'Your morning sets the tone for your entire day. Here is how to create a routine that reflects who you want to become.',
     category: 'Lifestyle',
-    author: 'Maya Patel',
-    authorBio: 'Lifestyle design consultant and author focused on intentional living practices.',
+    author: 'Yash Karande',
+    authorBio: 'Founder of Aligned & personal growth enthusiast passionate about helping people become their best selves.',
     date: 'December 15, 2024',
     readTime: '5 min read',
     featured: false,
@@ -365,8 +365,8 @@ Permission to change is permission to grow.
     title: 'The 5-Minute Reflection Practice That Changed Everything',
     excerpt: 'A simple daily reflection habit that helps you learn from each day and continuously improve without overwhelm.',
     category: 'Mindfulness',
-    author: 'Rahul Menon',
-    authorBio: 'Mindfulness teacher and former tech executive who found balance through reflection.',
+    author: 'Yash Karande',
+    authorBio: 'Founder of Aligned & personal growth enthusiast passionate about helping people become their best selves.',
     date: 'December 12, 2024',
     readTime: '4 min read',
     featured: false,
@@ -426,7 +426,7 @@ Pick what feels natural:
 - Written journal
 - Voice memo
 - Mental review while walking
-- App-based prompts (like Kairos)
+- App-based prompts (like Aligned)
 
 ### Start Smaller if Needed
 
@@ -478,8 +478,8 @@ But start with daily. Master that first.
     title: 'How AI is Revolutionizing Personal Planning (Without Taking Over)',
     excerpt: 'Explore how AI can be a thoughtful assistant in your planning process while you remain in control of your life.',
     category: 'Technology',
-    author: 'Aditya Sharma',
-    authorBio: 'Co-founder of Kairos & habit psychology enthusiast with 10+ years of research experience.',
+    author: 'Yash Karande',
+    authorBio: 'Founder of Aligned & personal growth enthusiast passionate about helping people become their best selves.',
     date: 'December 10, 2024',
     readTime: '7 min read',
     featured: false,
@@ -561,9 +561,9 @@ Sometimes the right decision is the hard one—the one that scares you, challeng
 
 That gut feeling that something is right or wrong? AI doesn't have it. Your intuition is a form of wisdom that algorithms can't replicate.
 
-## The Kairos Philosophy
+## The Aligned Philosophy
 
-At Kairos, we've thought deeply about the human-AI relationship in personal planning. Our approach:
+At Aligned, we've thought deeply about the human-AI relationship in personal planning. Our approach:
 
 **1. Human-Centered Design**
 
@@ -618,8 +618,8 @@ Regularly assess whether AI tools are actually helping. Ditch what doesn't serve
     title: 'Micro-Steps: The Secret to Achieving Big Goals Without Feeling Overwhelmed',
     excerpt: 'Breaking down ambitious goals into tiny daily actions is the key to consistent progress. Here is how to do it right.',
     category: 'Productivity',
-    author: 'Priya Nair',
-    authorBio: 'Productivity coach and mindfulness practitioner helping professionals find balance.',
+    author: 'Yash Karande',
+    authorBio: 'Founder of Aligned & personal growth enthusiast passionate about helping people become their best selves.',
     date: 'December 8, 2024',
     readTime: '6 min read',
     featured: false,
@@ -751,9 +751,9 @@ Micro-steps are about consistency, not results. Trust the process. The results w
 
 Habits take time. Give yourself at least 30 days before evaluating. The magic happens in the long run.
 
-## The Kairos Connection
+## The Aligned Connection
 
-This is exactly how Kairos works. You set your vision (the big goal), and our AI breaks it down into daily micro-steps personalized to your life.
+This is exactly how Aligned works. You set your vision (the big goal), and our AI breaks it down into daily micro-steps personalized to your life.
 
 Each day, you see just what's needed TODAY. Not the whole overwhelming mountain—just the next small step.
 

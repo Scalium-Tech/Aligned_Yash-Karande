@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getUserStorageKey } from '@/lib/userStorage';
 
 export type NotificationType = 'habit' | 'focus' | 'checkin' | 'goal' | 'custom';
 
@@ -59,8 +60,9 @@ const defaultNotifications: ScheduledNotification[] = [
     },
 ];
 
-function loadNotificationData(): NotificationData {
-    const stored = localStorage.getItem(NOTIFICATIONS_KEY);
+function loadNotificationData(userId?: string): NotificationData {
+    const key = getUserStorageKey(NOTIFICATIONS_KEY, userId);
+    const stored = localStorage.getItem(key);
     const permission = typeof Notification !== 'undefined' ? Notification.permission : 'default';
 
     if (!stored) {
@@ -74,13 +76,20 @@ function loadNotificationData(): NotificationData {
     }
 }
 
-function saveNotificationData(notifications: ScheduledNotification[]): void {
-    localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify({ notifications }));
+function saveNotificationData(notifications: ScheduledNotification[], userId?: string): void {
+    const key = getUserStorageKey(NOTIFICATIONS_KEY, userId);
+    localStorage.setItem(key, JSON.stringify({ notifications }));
 }
 
-export function useNotifications() {
-    const [data, setData] = useState<NotificationData>(() => loadNotificationData());
+export function useNotifications(userId?: string) {
+    const [data, setData] = useState<NotificationData>(() => loadNotificationData(userId));
     const [checkInterval, setCheckInterval] = useState<NodeJS.Timeout | null>(null);
+
+    // Reload data when userId changes
+    useEffect(() => {
+        const newData = loadNotificationData(userId);
+        setData(newData);
+    }, [userId]);
 
     // Request notification permission
     const requestPermission = useCallback(async () => {
@@ -168,8 +177,8 @@ export function useNotifications() {
 
     // Save changes to localStorage
     useEffect(() => {
-        saveNotificationData(data.notifications);
-    }, [data.notifications]);
+        saveNotificationData(data.notifications, userId);
+    }, [data.notifications, userId]);
 
     // Add a new notification
     const addNotification = useCallback((notification: Omit<ScheduledNotification, 'id'>) => {

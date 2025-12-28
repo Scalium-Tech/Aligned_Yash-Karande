@@ -37,6 +37,8 @@ interface SuggestedChallenge {
 }
 
 export function GoalsChallenges() {
+    const { user } = useAuth();
+
     const {
         createChallenge,
         checkInChallenge,
@@ -49,11 +51,10 @@ export function GoalsChallenges() {
         showCelebration,
         celebrationMessage,
         dismissCelebration,
-    } = useGoals();
+    } = useGoals(user?.id);
 
-    const { analytics } = useAnalytics();
-    const { journal } = useJournal();
-    const { user } = useAuth();
+    const { analytics } = useAnalytics(user?.id);
+    const { journal } = useJournal(user?.id);
 
     const [showNewChallenge, setShowNewChallenge] = useState(false);
     const [newTitle, setNewTitle] = useState('');
@@ -766,8 +767,8 @@ Return only JSON.`;
                                     <div
                                         key={i}
                                         className={`p-4 rounded-xl border ${i + 1 === selectedChallengeWeeklyPlan.currentWeek
-                                                ? 'bg-gradient-to-r from-primary/20 to-violet/20 border-primary/40'
-                                                : 'bg-secondary/30 border-border/50'
+                                            ? 'bg-gradient-to-r from-primary/20 to-violet/20 border-primary/40'
+                                            : 'bg-secondary/30 border-border/50'
                                             }`}
                                     >
                                         <div className="flex items-center justify-between mb-2">

@@ -44,7 +44,6 @@ export function DashboardLayout({
                 activeSection={activeSection}
                 onSectionChange={onSectionChange}
                 onLogout={onLogout}
-                userName={userName}
             />
 
             {/* Main Content */}

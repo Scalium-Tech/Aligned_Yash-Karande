@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getUserStorageKey } from '@/lib/userStorage';
 
 interface JournalEntry {
     id: string;
@@ -36,8 +37,9 @@ function getDailyPrompt(): string {
     return dailyPrompts[dayOfYear % dailyPrompts.length];
 }
 
-function loadJournal(): JournalData {
-    const stored = localStorage.getItem(JOURNAL_KEY);
+function loadJournal(userId?: string): JournalData {
+    const key = getUserStorageKey(JOURNAL_KEY, userId);
+    const stored = localStorage.getItem(key);
     if (!stored) {
         return { entries: [] };
     }
@@ -48,8 +50,9 @@ function loadJournal(): JournalData {
     }
 }
 
-function saveJournal(data: JournalData): void {
-    localStorage.setItem(JOURNAL_KEY, JSON.stringify(data));
+function saveJournal(data: JournalData, userId?: string): void {
+    const key = getUserStorageKey(JOURNAL_KEY, userId);
+    localStorage.setItem(key, JSON.stringify(data));
 }
 
 async function generateAIInsights(content: string, prompt: string): Promise<{ summary: string; polished: string }> {
@@ -136,9 +139,15 @@ Return ONLY a valid JSON object (no markdown):
     }
 }
 
-export function useJournal() {
-    const [journal, setJournal] = useState<JournalData>(() => loadJournal());
+export function useJournal(userId?: string) {
+    const [journal, setJournal] = useState<JournalData>(() => loadJournal(userId));
     const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+
+    // Reload data when userId changes
+    useEffect(() => {
+        const newData = loadJournal(userId);
+        setJournal(newData);
+    }, [userId]);
 
     const todayEntry = journal.entries.find(e => e.date === getTodayKey());
     const dailyPrompt = getDailyPrompt();
@@ -169,10 +178,10 @@ export function useJournal() {
             updated.entries.unshift(entry);
         }
 
-        saveJournal(updated);
+        saveJournal(updated, userId);
         setJournal(updated);
         return entry;
-    }, [journal, dailyPrompt]);
+    }, [journal, dailyPrompt, userId]);
 
     const getRecentEntries = useCallback((limit: number = 7) => {
         return journal.entries.slice(0, limit);

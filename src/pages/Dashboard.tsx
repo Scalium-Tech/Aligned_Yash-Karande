@@ -20,6 +20,7 @@ import { SettingsSection } from '@/components/dashboard/SettingsSection';
 import { WeeklyInsights } from '@/components/dashboard/WeeklyInsights';
 import { DailyHabitsSection } from '@/components/dashboard/DailyHabitsSection';
 import { useAIInsights } from '@/hooks/useAIInsights';
+import { getUserStorageKey } from '@/lib/userStorage';
 
 // Section components
 function GoalsSection() {
@@ -78,21 +79,29 @@ export default function Dashboard() {
   const [activeSection, setActiveSection] = useState('dashboard');
 
   // Custom weekly plan state (user adjustments)
-  const [customWeeklyPlan, setCustomWeeklyPlan] = useState<{ day: string; activity: string }[] | null>(() => {
-    const stored = localStorage.getItem('aligned_custom_weekly_plan');
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch {
-        return null;
+  const [customWeeklyPlan, setCustomWeeklyPlan] = useState<{ day: string; activity: string }[] | null>(null);
+
+  // Load custom weekly plan when user is available
+  useEffect(() => {
+    if (user?.id) {
+      const key = getUserStorageKey('aligned_custom_weekly_plan', user.id);
+      const stored = localStorage.getItem(key);
+      if (stored) {
+        try {
+          setCustomWeeklyPlan(JSON.parse(stored));
+        } catch {
+          setCustomWeeklyPlan(null);
+        }
+      } else {
+        setCustomWeeklyPlan(null);
       }
     }
-    return null;
-  });
+  }, [user?.id]);
 
   const handleWeeklyPlanUpdate = (newPlan: { day: string; activity: string }[]) => {
     setCustomWeeklyPlan(newPlan);
-    localStorage.setItem('aligned_custom_weekly_plan', JSON.stringify(newPlan));
+    const key = getUserStorageKey('aligned_custom_weekly_plan', user?.id);
+    localStorage.setItem(key, JSON.stringify(newPlan));
   };
   useEffect(() => {
     if (!loading) {

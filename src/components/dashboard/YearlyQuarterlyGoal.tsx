@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Lightbulb, Check, Sparkles, ChevronDown, ChevronUp, Calendar, Eye, X, CheckCircle2, Circle, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserStorageKey } from '@/lib/userStorage';
 
 interface WeeklyPlanItem {
     week: string;
@@ -95,7 +97,8 @@ function generateWeeklyPlan(quarterGoal: string, quarterNum: number): WeeklyPlan
 }
 
 export function YearlyQuarterlyGoal({ yearlyGoalTitle, quarterlyGoals, yourWhyDetail }: YearlyQuarterlyGoalProps) {
-    const { logHabitComplete } = useAnalytics();
+    const { user } = useAuth();
+    const { logHabitComplete } = useAnalytics(user?.id);
     const [expandedQuarter, setExpandedQuarter] = useState<string | null>(null);
     const [showFullPlanModal, setShowFullPlanModal] = useState(false);
     const [selectedQuarterPlan, setSelectedQuarterPlan] = useState<{ quarter: string; goal: string; plan: WeeklyPlanItem[] } | null>(null);
@@ -107,28 +110,32 @@ export function YearlyQuarterlyGoal({ yearlyGoalTitle, quarterlyGoals, yourWhyDe
 
     // Load completions on mount
     useEffect(() => {
-        const stored = localStorage.getItem(COMPLETIONS_KEY);
+        const key = getUserStorageKey(COMPLETIONS_KEY, user?.id);
+        const stored = localStorage.getItem(key);
         if (stored) {
             try {
                 setCompletedActivities(JSON.parse(stored));
             } catch (e) {
                 console.error('Error loading completions:', e);
             }
+        } else {
+            setCompletedActivities({});
         }
-    }, []);
+    }, [user?.id]);
 
     const toggleActivity = (quarter: string, week: string, day: string) => {
-        const key = `${quarter}-${week}-${day}`;
-        const isPreviouslyCompleted = !!completedActivities[key];
+        const activityKey = `${quarter}-${week}-${day}`;
+        const isPreviouslyCompleted = !!completedActivities[activityKey];
         const todayStr = new Date().toISOString().split('T')[0];
 
         const newCompletions = {
             ...completedActivities,
-            [key]: isPreviouslyCompleted ? null : todayStr
+            [activityKey]: isPreviouslyCompleted ? null : todayStr
         };
 
         setCompletedActivities(newCompletions);
-        localStorage.setItem(COMPLETIONS_KEY, JSON.stringify(newCompletions));
+        const storageKey = getUserStorageKey(COMPLETIONS_KEY, user?.id);
+        localStorage.setItem(storageKey, JSON.stringify(newCompletions));
 
         if (!isPreviouslyCompleted) {
             // Log as a habit completion for productivity score

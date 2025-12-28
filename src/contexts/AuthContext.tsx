@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { clearDashboardData } from '@/lib/clearDashboardData';
+import { migrateUserData } from '@/lib/dataMigration';
 interface Profile {
   id: string;
   full_name: string;
@@ -69,6 +70,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
+        // Run data migration for existing users on session restore
+        migrateUserData(session.user.id);
         fetchProfile(session.user.id).finally(() => setLoading(false));
       } else {
         setLoading(false);
@@ -124,8 +127,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error };
     }
 
-    // Fetch profile to check onboarding status
+    // Fetch profile and migrate data for existing users
     if (data.user) {
+      // Run data migration for existing users
+      migrateUserData(data.user.id);
+
       const profileData = await fetchProfile(data.user.id);
       return {
         error: null,

@@ -4,10 +4,13 @@ import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 
 import { TrendingUp, Clock, CheckCircle2, Flame, Trophy, ListChecks, Heart } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useGoals } from '@/hooks/useGoals';
+import { useAuth } from '@/contexts/AuthContext';
+import { getUserStorageKey } from '@/lib/userStorage';
 
 export function WeeklyProgress() {
-    const { analytics, getWeeklyData } = useAnalytics();
-    const { getActiveChallenges } = useGoals();
+    const { user } = useAuth();
+    const { analytics, getWeeklyData } = useAnalytics(user?.id);
+    const { getActiveChallenges } = useGoals(user?.id);
     const weeklyData = getWeeklyData();
     const activeChallenges = getActiveChallenges();
 
@@ -15,15 +18,18 @@ export function WeeklyProgress() {
 
     // Load quarterly completions once
     useEffect(() => {
-        const stored = localStorage.getItem('aligned_quarterly_completions');
+        const key = getUserStorageKey('aligned_quarterly_completions', user?.id);
+        const stored = localStorage.getItem(key);
         if (stored) {
             try {
                 setQuarterlyCompletions(JSON.parse(stored));
             } catch (e) {
                 console.error('Error loading quarterly completions for chart:', e);
             }
+        } else {
+            setQuarterlyCompletions({});
         }
-    }, []);
+    }, [user?.id]);
 
     const totalFocusThisWeek = weeklyData.reduce((sum, d) => sum + d.focusMinutes, 0);
     const totalTasksThisWeek = weeklyData.reduce((sum, d) => sum + d.tasksCompleted, 0);

@@ -3,9 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Sparkles, Send, Smile, Meh, Frown, Loader2, ChevronDown, ChevronUp, MessageCircle, Wand2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useJournal } from '@/hooks/useJournal';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function ReflectionJournal() {
-    const { todayEntry, dailyPrompt, saveEntry, getRecentEntries, isGeneratingAI } = useJournal();
+    const { user } = useAuth();
+    const { todayEntry, dailyPrompt, saveEntry, getRecentEntries, isGeneratingAI } = useJournal(user?.id);
     const [content, setContent] = useState(todayEntry?.content || '');
     const [selectedMood, setSelectedMood] = useState<'great' | 'okay' | 'low' | undefined>(todayEntry?.mood);
     const [showHistory, setShowHistory] = useState(false);

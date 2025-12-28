@@ -108,8 +108,8 @@ export function DailyHabitsSection() {
     const [newNonNeg, setNewNonNeg] = useState('');
     const [showAddNonNeg, setShowAddNonNeg] = useState(false);
     const [isGeneratingHealth, setIsGeneratingHealth] = useState(false);
-    const { logHabitComplete, logTaskComplete } = useAnalytics();
     const { user } = useAuth();
+    const { logHabitComplete, logTaskComplete } = useAnalytics(user?.id);
 
     // Load data on mount and check for personalization from onboarding
     useEffect(() => {
@@ -199,7 +199,7 @@ export function DailyHabitsSection() {
                 if (text.startsWith('```')) text = text.slice(3);
                 if (text.endsWith('```')) text = text.slice(0, -3);
 
-                const objectives = JSON.parse(text.trim()).map((obj: any) => ({ ...obj, completed: false }));
+                const objectives = JSON.parse(text.trim()).map((obj: Partial<HealthObjective>) => ({ ...obj, completed: false }));
                 setHealthObjectives(objectives);
                 saveHealthObjectives(objectives);
             }

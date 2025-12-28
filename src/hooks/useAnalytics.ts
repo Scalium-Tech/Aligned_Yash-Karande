@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getUserStorageKey } from '@/lib/userStorage';
 
 // Types for analytics data
 interface DailyActivity {
@@ -53,34 +54,33 @@ function getLastNDays(n: number): string[] {
     return days;
 }
 
-function loadAnalytics(): AnalyticsData {
-    const stored = localStorage.getItem(ANALYTICS_KEY);
+function getDefaultAnalytics(): AnalyticsData {
+    return {
+        dailyActivities: {},
+        currentStreak: 0,
+        longestStreak: 0,
+        totalFocusMinutes: 0,
+        totalTasksCompleted: 0,
+        totalFocusSessions: 0,
+    };
+}
+
+function loadAnalytics(userId?: string): AnalyticsData {
+    const key = getUserStorageKey(ANALYTICS_KEY, userId);
+    const stored = localStorage.getItem(key);
     if (!stored) {
-        return {
-            dailyActivities: {},
-            currentStreak: 0,
-            longestStreak: 0,
-            totalFocusMinutes: 0,
-            totalTasksCompleted: 0,
-            totalFocusSessions: 0,
-        };
+        return getDefaultAnalytics();
     }
     try {
         return JSON.parse(stored);
     } catch {
-        return {
-            dailyActivities: {},
-            currentStreak: 0,
-            longestStreak: 0,
-            totalFocusMinutes: 0,
-            totalTasksCompleted: 0,
-            totalFocusSessions: 0,
-        };
+        return getDefaultAnalytics();
     }
 }
 
-function saveAnalytics(data: AnalyticsData): void {
-    localStorage.setItem(ANALYTICS_KEY, JSON.stringify(data));
+function saveAnalytics(data: AnalyticsData, userId?: string): void {
+    const key = getUserStorageKey(ANALYTICS_KEY, userId);
+    localStorage.setItem(key, JSON.stringify(data));
 }
 
 function calculateStreak(dailyActivities: Record<string, DailyActivity>): number {
@@ -113,56 +113,61 @@ function calculateStreak(dailyActivities: Record<string, DailyActivity>): number
 }
 
 function calculateIdentityScore(dailyActivities: Record<string, DailyActivity>): number {
-    const last7Days = getLastNDays(7);
+    // Calculate score based on TODAY's activity only - resets to 0% at start of each day
+    const todayKey = getTodayKey();
+    const todayActivity = dailyActivities[todayKey];
+
+    // If no activity today, return 0%
+    if (!todayActivity) return 0;
+
     let totalActions = 0;
     let completedActions = 0;
-    let hasAnyActivity = false;
 
-    for (const day of last7Days) {
-        const activity = dailyActivities[day];
-        if (activity) {
-            hasAnyActivity = true;
-
-            // Only count tasks if user has set tasks for that day
-            if (activity.tasksTotal > 0) {
-                totalActions += activity.tasksTotal;
-                completedActions += activity.tasksCompleted;
-            }
-
-            // Only count habits if user has set habits for that day
-            if (activity.habitsTotal > 0) {
-                totalActions += activity.habitsTotal;
-                completedActions += activity.habitsCompleted;
-            }
-
-            // Daily check-in counts as a completed action
-            if (activity.moodCheckin) {
-                totalActions += 1;
-                completedActions += 1;
-            }
-
-            // Focus sessions count as completed actions
-            if (activity.focusSessions > 0) {
-                totalActions += activity.focusSessions;
-                completedActions += activity.focusSessions;
-            }
-        }
+    // Only count tasks if user has set tasks for today
+    if (todayActivity.tasksTotal > 0) {
+        totalActions += todayActivity.tasksTotal;
+        completedActions += todayActivity.tasksCompleted;
     }
 
-    // If user has no activity at all, return 0
-    if (!hasAnyActivity || totalActions === 0) return 0;
+    // Only count habits if user has set habits for today
+    if (todayActivity.habitsTotal > 0) {
+        totalActions += todayActivity.habitsTotal;
+        completedActions += todayActivity.habitsCompleted;
+    }
+
+    // Daily check-in counts as a completed action
+    if (todayActivity.moodCheckin) {
+        totalActions += 1;
+        completedActions += 1;
+    }
+
+    // Focus sessions count as completed actions
+    if (todayActivity.focusSessions > 0) {
+        totalActions += todayActivity.focusSessions;
+        completedActions += todayActivity.focusSessions;
+    }
+
+    // If user has no planned actions today, return 0
+    if (totalActions === 0) return 0;
+
     // Cap at 100% to prevent over-completion display
     return Math.min(100, Math.round((completedActions / totalActions) * 100));
 }
 
-export function useAnalytics() {
-    const [analytics, setAnalytics] = useState<AnalyticsData>(() => loadAnalytics());
+export function useAnalytics(userId?: string) {
+    const [analytics, setAnalytics] = useState<AnalyticsData>(() => loadAnalytics(userId));
     const [identityScore, setIdentityScore] = useState<number>(0);
+
+    // Reload data when userId changes
+    useEffect(() => {
+        const newData = loadAnalytics(userId);
+        setAnalytics(newData);
+    }, [userId]);
 
     // Listen for storage changes from other components
     useEffect(() => {
         const handleStorageChange = () => {
-            const newData = loadAnalytics();
+            const newData = loadAnalytics(userId);
             setAnalytics(newData);
         };
 
@@ -180,15 +185,18 @@ export function useAnalytics() {
             window.removeEventListener('analytics-updated', handleStorageChange);
             window.removeEventListener('storage', handleStorageChange);
         };
-    }, []);
+    }, [userId]);
 
     // Sync mood data from mood tracker
     useEffect(() => {
-        const moodData = localStorage.getItem(MOOD_KEY);
+        const moodKey = getUserStorageKey(MOOD_KEY, userId);
+        const moodData = localStorage.getItem(moodKey);
         if (moodData) {
             try {
                 const parsed = JSON.parse(moodData);
-                const updated = { ...analytics };
+                // Load fresh analytics data to avoid stale closure
+                const currentAnalytics = loadAnalytics(userId);
+                const updated = { ...currentAnalytics };
                 let hasChanges = false;
 
                 for (const [date, data] of Object.entries(parsed)) {
@@ -206,14 +214,14 @@ export function useAnalytics() {
                 if (hasChanges) {
                     updated.currentStreak = calculateStreak(updated.dailyActivities);
                     updated.longestStreak = Math.max(updated.longestStreak, updated.currentStreak);
-                    saveAnalytics(updated);
+                    saveAnalytics(updated, userId);
                     setAnalytics(updated);
                 }
             } catch (e) {
                 console.error('Error syncing mood data:', e);
             }
         }
-    }, []);
+    }, [userId]);
 
     // Calculate identity score
     useEffect(() => {
@@ -223,7 +231,7 @@ export function useAnalytics() {
 
     const logFocusSession = useCallback((minutes: number) => {
         const todayKey = getTodayKey();
-        const currentData = loadAnalytics(); // Get fresh data
+        const currentData = loadAnalytics(userId);
         const updated = { ...currentData };
 
         if (!updated.dailyActivities[todayKey]) {
@@ -237,16 +245,16 @@ export function useAnalytics() {
         updated.currentStreak = calculateStreak(updated.dailyActivities);
         updated.longestStreak = Math.max(updated.longestStreak, updated.currentStreak);
 
-        saveAnalytics(updated);
+        saveAnalytics(updated, userId);
         setAnalytics(updated);
 
         // Dispatch event to notify other components
         window.dispatchEvent(new CustomEvent('analytics-updated'));
-    }, []);
+    }, [userId]);
 
     const logTaskComplete = useCallback((totalTasks: number = 3) => {
         const todayKey = getTodayKey();
-        const currentData = loadAnalytics();
+        const currentData = loadAnalytics(userId);
         const updated = { ...currentData };
 
         if (!updated.dailyActivities[todayKey]) {
@@ -259,14 +267,14 @@ export function useAnalytics() {
         updated.currentStreak = calculateStreak(updated.dailyActivities);
         updated.longestStreak = Math.max(updated.longestStreak, updated.currentStreak);
 
-        saveAnalytics(updated);
+        saveAnalytics(updated, userId);
         setAnalytics(updated);
         window.dispatchEvent(new CustomEvent('analytics-updated'));
-    }, []);
+    }, [userId]);
 
     const logHabitComplete = useCallback((totalHabits: number = 4) => {
         const todayKey = getTodayKey();
-        const currentData = loadAnalytics();
+        const currentData = loadAnalytics(userId);
         const updated = { ...currentData };
 
         if (!updated.dailyActivities[todayKey]) {
@@ -278,10 +286,10 @@ export function useAnalytics() {
         updated.currentStreak = calculateStreak(updated.dailyActivities);
         updated.longestStreak = Math.max(updated.longestStreak, updated.currentStreak);
 
-        saveAnalytics(updated);
+        saveAnalytics(updated, userId);
         setAnalytics(updated);
         window.dispatchEvent(new CustomEvent('analytics-updated'));
-    }, []);
+    }, [userId]);
 
     const getWeeklyData = useCallback(() => {
         const last7Days = getLastNDays(7);
