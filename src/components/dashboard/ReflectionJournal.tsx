@@ -64,16 +64,23 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
                 }
             );
 
-            if (response.ok) {
-                const data = await response.json();
-                const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+            const data = await response.json();
+
+            if (response.ok && data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+                const text = data.candidates[0].content.parts[0].text.trim();
                 setAiResponse(text);
+            } else if (data.error) {
+                console.error('API Error:', data.error);
+                setAiResponse(`AI service error: ${data.error.message || 'Unknown error'}. Please try again.`);
+            } else if (data.candidates?.[0]?.finishReason === 'SAFETY') {
+                setAiResponse("I couldn't respond to that query due to content safety guidelines. Please try rephrasing your question.");
             } else {
-                setAiResponse("I couldn't process your request right now. Please try again.");
+                console.error('Unexpected response:', data);
+                setAiResponse("I couldn't process your request. Please try rephrasing your question or try again later.");
             }
         } catch (error) {
             console.error('Error asking AI:', error);
-            setAiResponse("Something went wrong. Please try again later.");
+            setAiResponse("Connection error. Please check your internet connection and try again.");
         } finally {
             setIsAskingAI(false);
         }
