@@ -109,7 +109,7 @@ export function DailyHabitsSection() {
     const [showAddNonNeg, setShowAddNonNeg] = useState(false);
     const [isGeneratingHealth, setIsGeneratingHealth] = useState(false);
     const { user } = useAuth();
-    const { logHabitComplete, logTaskComplete } = useAnalytics(user?.id);
+    const { logHabitComplete, logTaskComplete, setHabitsTotal } = useAnalytics(user?.id);
 
     // Load data on mount and check for personalization from onboarding
     useEffect(() => {
@@ -162,6 +162,14 @@ export function DailyHabitsSection() {
 
         initializeAll();
     }, [user]);
+
+    // Set total habits count in analytics when habits are loaded
+    useEffect(() => {
+        const totalHabits = nonNegotiables.length + healthObjectives.length;
+        if (totalHabits > 0) {
+            setHabitsTotal(totalHabits);
+        }
+    }, [nonNegotiables.length, healthObjectives.length, setHabitsTotal]);
 
     const generateHealthObjectives = async (healthFocus: string) => {
         const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;

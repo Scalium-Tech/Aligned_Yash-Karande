@@ -321,6 +321,24 @@ export function useAnalytics(userId?: string) {
         window.dispatchEvent(new CustomEvent('analytics-updated'));
     }, [userId]);
 
+    const setHabitsTotal = useCallback((totalHabits: number) => {
+        const todayKey = getTodayKey();
+        const currentData = loadAnalytics(userId);
+        const updated = { ...currentData };
+
+        if (!updated.dailyActivities[todayKey]) {
+            updated.dailyActivities[todayKey] = getDefaultDailyActivity(todayKey);
+        }
+
+        // Only update if it's different or not yet set
+        if (updated.dailyActivities[todayKey].habitsTotal !== totalHabits) {
+            updated.dailyActivities[todayKey].habitsTotal = totalHabits;
+            saveAnalytics(updated, userId);
+            setAnalytics(updated);
+            window.dispatchEvent(new CustomEvent('analytics-updated'));
+        }
+    }, [userId]);
+
     const getWeeklyData = useCallback(() => {
         const last7Days = getLastNDays(7);
         return last7Days.map(date => {
@@ -345,6 +363,7 @@ export function useAnalytics(userId?: string) {
         logTaskComplete,
         logHabitComplete,
         logChallengeCheckIn,
+        setHabitsTotal,
         getWeeklyData,
     };
 }
