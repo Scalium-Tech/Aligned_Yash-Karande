@@ -35,8 +35,66 @@ export function ReflectionJournal() {
 
         const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
 
-        if (!apiKey) {
-            setAiResponse("I'm here to help! To enable AI responses, please add your Google API key to the environment variables.");
+        // Fallback responses for common questions
+        const fallbackResponses: Record<string, string> = {
+            'plan my week': `Here's a simple weekly planning framework:
+
+**📅 Weekly Planning Steps:**
+1. **Review your goals** - What are your top 3 priorities this week?
+2. **Block your time** - Schedule your most important tasks for when you have peak energy
+3. **Build in buffers** - Leave 20% of your time unscheduled for unexpected tasks
+4. **Daily review** - Spend 5 minutes each morning reviewing today's plan
+
+**💡 Pro tip:** Start with your "non-negotiables" - the tasks that will have the biggest impact on your goals.`,
+            'create a morning routine': `Here's a powerful morning routine template:
+
+**🌅 Ideal Morning Routine (90 mins):**
+1. **Wake up** - Same time daily, no snooze
+2. **Hydrate** - Drink a full glass of water (5 mins)
+3. **Move** - Light exercise or stretching (15 mins)
+4. **Mindfulness** - Meditation or journaling (10 mins)
+5. **Plan** - Review your day's priorities (10 mins)
+6. **Deep work** - Tackle your most important task (50 mins)
+
+**💡 Start small:** Pick just 2-3 elements and build from there.`,
+            'how to stay focused?': `Here are proven strategies to stay focused:
+
+**🎯 Focus Tips:**
+1. **Remove distractions** - Put phone in another room, close unnecessary tabs
+2. **Use time blocks** - Work in 25-50 minute focused sessions
+3. **Single-task** - Do one thing at a time, not multitasking
+4. **Take breaks** - 5-10 minute breaks between sessions
+5. **Optimize your environment** - Good lighting, comfortable temperature
+
+**💡 The 2-minute rule:** If a distracting thought comes up, write it down to address later.`,
+            'motivate me': `You've got this! Here's some perspective:
+
+**💪 Remember:**
+- Every expert was once a beginner
+- Progress, not perfection, is the goal
+- Small steps lead to big changes
+- You're reading this because you WANT to improve
+
+**🔥 Action creates motivation:**
+Start with just 5 minutes of work. Motion creates emotion - once you begin, momentum builds.
+
+**Your identity:** You are becoming the person you want to be, one small action at a time. Keep going!`
+        };
+
+        // Check for fallback response
+        const queryLower = aiQuery.toLowerCase().trim();
+        const fallbackKey = Object.keys(fallbackResponses).find(key =>
+            queryLower.includes(key) || key.includes(queryLower)
+        );
+
+        if (!apiKey || apiKey === 'your_google_api_key_here') {
+            if (fallbackKey) {
+                setAiResponse(fallbackResponses[fallbackKey]);
+            } else {
+                setAiResponse(`I'd love to help! To enable personalized AI responses, add your Google API key to the .env file.
+
+In the meantime, try these quick asks: "Create a morning routine", "How to stay focused?", "Plan my week", or "Motivate me".`);
+            }
             setIsAskingAI(false);
             return;
         }
@@ -71,16 +129,31 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
                 setAiResponse(text);
             } else if (data.error) {
                 console.error('API Error:', data.error);
-                setAiResponse(`AI service error: ${data.error.message || 'Unknown error'}. Please try again.`);
+                // Use fallback if available
+                if (fallbackKey) {
+                    setAiResponse(fallbackResponses[fallbackKey]);
+                } else {
+                    setAiResponse(`AI service is temporarily unavailable. Try one of our quick asks: "Create a morning routine", "How to stay focused?", "Plan my week", or "Motivate me".`);
+                }
             } else if (data.candidates?.[0]?.finishReason === 'SAFETY') {
                 setAiResponse("I couldn't respond to that query due to content safety guidelines. Please try rephrasing your question.");
             } else {
                 console.error('Unexpected response:', data);
-                setAiResponse("I couldn't process your request. Please try rephrasing your question or try again later.");
+                // Use fallback if available
+                if (fallbackKey) {
+                    setAiResponse(fallbackResponses[fallbackKey]);
+                } else {
+                    setAiResponse("I couldn't process your request. Try one of our quick asks like 'Plan my week' or 'How to stay focused?'");
+                }
             }
         } catch (error) {
             console.error('Error asking AI:', error);
-            setAiResponse("Connection error. Please check your internet connection and try again.");
+            // Use fallback if available
+            if (fallbackKey) {
+                setAiResponse(fallbackResponses[fallbackKey]);
+            } else {
+                setAiResponse("Connection error. Try one of our quick asks: 'Create a morning routine', 'How to stay focused?', 'Plan my week', or 'Motivate me'.");
+            }
         } finally {
             setIsAskingAI(false);
         }
