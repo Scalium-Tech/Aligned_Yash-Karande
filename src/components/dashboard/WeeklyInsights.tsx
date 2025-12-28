@@ -27,11 +27,24 @@ export function WeeklyInsights() {
     const [aiSummary, setAiSummary] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [quarterlyProgress, setQuarterlyProgress] = useState(0);
+    const [refreshKey, setRefreshKey] = useState(0);
 
     const weeklyData = getWeeklyData();
     const journalSummary = getWeeklySummary();
     const recentEntries = getRecentEntries(7);
     const activeChallenges = getActiveChallenges();
+
+    // Listen for analytics updates to refresh data
+    useEffect(() => {
+        const handleAnalyticsUpdate = () => {
+            setRefreshKey(prev => prev + 1);
+        };
+
+        window.addEventListener('analytics-updated', handleAnalyticsUpdate);
+        return () => {
+            window.removeEventListener('analytics-updated', handleAnalyticsUpdate);
+        };
+    }, []);
 
     // Calculate quarterly goal completions for this week
     useEffect(() => {
@@ -57,7 +70,7 @@ export function WeeklyInsights() {
         } else {
             setQuarterlyProgress(0);
         }
-    }, [user?.id]);
+    }, [user?.id, refreshKey]);
 
     // Calculate weekly stats
     const totalFocusMinutes = weeklyData.reduce((sum, d) => sum + d.focusMinutes, 0);

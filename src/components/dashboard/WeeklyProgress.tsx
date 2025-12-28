@@ -15,6 +15,19 @@ export function WeeklyProgress() {
     const activeChallenges = getActiveChallenges();
 
     const [quarterlyCompletions, setQuarterlyCompletions] = useState<Record<string, string | null>>({});
+    const [refreshKey, setRefreshKey] = useState(0);
+
+    // Listen for analytics updates to refresh data
+    useEffect(() => {
+        const handleAnalyticsUpdate = () => {
+            setRefreshKey(prev => prev + 1);
+        };
+
+        window.addEventListener('analytics-updated', handleAnalyticsUpdate);
+        return () => {
+            window.removeEventListener('analytics-updated', handleAnalyticsUpdate);
+        };
+    }, []);
 
     // Load quarterly completions once
     useEffect(() => {
@@ -29,7 +42,7 @@ export function WeeklyProgress() {
         } else {
             setQuarterlyCompletions({});
         }
-    }, [user?.id]);
+    }, [user?.id, refreshKey]);
 
     const totalFocusThisWeek = weeklyData.reduce((sum, d) => sum + d.focusMinutes, 0);
     const totalTasksThisWeek = weeklyData.reduce((sum, d) => sum + d.tasksCompleted, 0);
