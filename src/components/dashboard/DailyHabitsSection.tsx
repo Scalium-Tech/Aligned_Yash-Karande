@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { getUserData, setUserData } from '@/lib/userStorage';
 
 interface NonNegotiable {
     id: string;
@@ -56,47 +57,31 @@ const placeholders: Record<string, string> = {
     nutrition: "e.g., Had 2 servings of vegetables, skipped breakfast...",
 };
 
-function loadHabitsData(): { nonNegotiables: NonNegotiable[], lastDate: string } {
-    const stored = localStorage.getItem(STORAGE_KEY);
+function loadHabitsData(userId?: string): { nonNegotiables: NonNegotiable[], lastDate: string } {
     const today = new Date().toISOString().split('T')[0];
+    const data = getUserData(STORAGE_KEY, userId, { nonNegotiables: defaultNonNegotiables, lastDate: today });
 
-    if (!stored) {
-        return { nonNegotiables: defaultNonNegotiables, lastDate: today };
+    if (data.lastDate !== today) {
+        return {
+            nonNegotiables: (data.nonNegotiables || defaultNonNegotiables).map((n: NonNegotiable) => ({ ...n, completed: false })),
+            lastDate: today
+        };
     }
-
-    try {
-        const data = JSON.parse(stored);
-        if (data.lastDate !== today) {
-            return {
-                nonNegotiables: (data.nonNegotiables || defaultNonNegotiables).map((n: NonNegotiable) => ({ ...n, completed: false })),
-                lastDate: today
-            };
-        }
-        return data;
-    } catch {
-        return { nonNegotiables: defaultNonNegotiables, lastDate: today };
-    }
+    return data;
 }
 
-function loadHealthObjectives(): { objectives: HealthObjective[], lastDate: string } {
-    const stored = localStorage.getItem(HEALTH_OBJECTIVES_KEY);
+function loadHealthObjectives(userId?: string): { objectives: HealthObjective[], lastDate: string } {
     const today = new Date().toISOString().split('T')[0];
+    const data = getUserData(HEALTH_OBJECTIVES_KEY, userId, { objectives: defaultHealthObjectives, lastDate: today });
 
-    if (!stored) return { objectives: defaultHealthObjectives, lastDate: today };
-
-    try {
-        const data = JSON.parse(stored);
-        if (data.lastDate !== today) {
-            // Reset completion status for a new day but keep the AI generated text
-            return {
-                objectives: (data.objectives || defaultHealthObjectives).map((o: HealthObjective) => ({ ...o, completed: false })),
-                lastDate: today
-            };
-        }
-        return data;
-    } catch {
-        return { objectives: defaultHealthObjectives, lastDate: today };
+    if (data.lastDate !== today) {
+        // Reset completion status for a new day but keep the AI generated text
+        return {
+            objectives: (data.objectives || defaultHealthObjectives).map((o: HealthObjective) => ({ ...o, completed: false })),
+            lastDate: today
+        };
     }
+    return data;
 }
 
 const HABITS_PERSONALIZED_KEY = 'aligned_habits_personalized';
@@ -111,20 +96,20 @@ export function DailyHabitsSection() {
     const { user } = useAuth();
     const { logHabitComplete, logTaskComplete, setHabitsTotal } = useAnalytics(user?.id);
 
-    // Load data on mount and check for personalization from onboarding
+    // Load data on mount and whenever user changes
     useEffect(() => {
         const initializeAll = async () => {
-            const habitsData = loadHabitsData();
-            const healthData = loadHealthObjectives();
+            const habitsData = loadHabitsData(user?.id);
+            const healthData = loadHealthObjectives(user?.id);
 
             setNonNegotiables(habitsData.nonNegotiables);
             setHealthObjectives(healthData.objectives);
 
             if (user) {
-                const habitPersonalized = localStorage.getItem(HABITS_PERSONALIZED_KEY);
-                const healthPersonalized = localStorage.getItem(HEALTH_PERSONALIZED_USER_KEY);
+                const habitPersonalized = localStorage.getItem(`${HABITS_PERSONALIZED_KEY}_${user.id}`);
+                const healthPersonalized = localStorage.getItem(`${HEALTH_PERSONALIZED_USER_KEY}_${user.id}`);
 
-                if (habitPersonalized !== user.id || healthPersonalized !== user.id) {
+                if (!habitPersonalized || !healthPersonalized) {
                     try {
                         const { data: userIdentity, error } = await supabase
                             .from('user_identity')
@@ -134,7 +119,7 @@ export function DailyHabitsSection() {
 
                         if (!error && userIdentity) {
                             // Personalize Habits
-                            if (habitPersonalized !== user.id && userIdentity.habits_focus) {
+                            if (!habitPersonalized && userIdentity.habits_focus) {
                                 const habits = userIdentity.habits_focus.split(/[,\n;]+/).map((h: string) => h.trim()).filter((h: string) => h.length > 2);
                                 if (habits.length > 0) {
                                     const personalized = habits.map((h: string, i: number) => ({
@@ -143,14 +128,15 @@ export function DailyHabitsSection() {
                                         completed: false
                                     }));
                                     setNonNegotiables(personalized);
-                                    localStorage.setItem(HABITS_PERSONALIZED_KEY, user.id);
+                                    saveNonNegotiables(personalized, user.id);
+                                    localStorage.setItem(`${HABITS_PERSONALIZED_KEY}_${user.id}`, 'true');
                                 }
                             }
 
                             // Personalize Health Objectives
-                            if (healthPersonalized !== user.id && userIdentity.health_focus) {
+                            if (!healthPersonalized && userIdentity.health_focus) {
                                 await generateHealthObjectives(userIdentity.health_focus);
-                                localStorage.setItem(HEALTH_PERSONALIZED_USER_KEY, user.id);
+                                localStorage.setItem(`${HEALTH_PERSONALIZED_USER_KEY}_${user.id}`, 'true');
                             }
                         }
                     } catch (err) {
@@ -161,7 +147,7 @@ export function DailyHabitsSection() {
         };
 
         initializeAll();
-    }, [user]);
+    }, [user?.id]);
 
     // Set total habits count in analytics when habits are loaded
     useEffect(() => {
@@ -209,7 +195,7 @@ export function DailyHabitsSection() {
 
                 const objectives = JSON.parse(text.trim()).map((obj: Partial<HealthObjective>) => ({ ...obj, completed: false }));
                 setHealthObjectives(objectives);
-                saveHealthObjectives(objectives);
+                saveHealthObjectives(objectives, user?.id);
             }
         } catch (e) {
             console.error('Error generating health goals:', e);
@@ -218,31 +204,35 @@ export function DailyHabitsSection() {
         }
     };
 
-    const saveHealthObjectives = (objectives: HealthObjective[]) => {
+    const saveHealthObjectives = (objectives: HealthObjective[], userId: string | undefined) => {
         const today = new Date().toISOString().split('T')[0];
-        localStorage.setItem(HEALTH_OBJECTIVES_KEY, JSON.stringify({
+        setUserData(HEALTH_OBJECTIVES_KEY, userId, {
             objectives,
             lastDate: today,
-        }));
+        });
+    };
+
+    const saveNonNegotiables = (nonNegotiables: NonNegotiable[], userId: string | undefined) => {
+        const today = new Date().toISOString().split('T')[0];
+        setUserData(STORAGE_KEY, userId, {
+            nonNegotiables,
+            lastDate: today,
+        });
     };
 
     // Save non-negotiables
     useEffect(() => {
-        if (nonNegotiables.length > 0) {
-            const today = new Date().toISOString().split('T')[0];
-            localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                nonNegotiables,
-                lastDate: today,
-            }));
+        if (nonNegotiables.length > 0 && user?.id) {
+            saveNonNegotiables(nonNegotiables, user.id);
         }
-    }, [nonNegotiables]);
+    }, [nonNegotiables, user?.id]);
 
     // Save health objectives
     useEffect(() => {
-        if (healthObjectives.length > 0) {
-            saveHealthObjectives(healthObjectives);
+        if (healthObjectives.length > 0 && user?.id) {
+            saveHealthObjectives(healthObjectives, user.id);
         }
-    }, [healthObjectives]);
+    }, [healthObjectives, user?.id]);
 
     const toggleNonNegotiable = (id: string) => {
         setNonNegotiables(prev => {
