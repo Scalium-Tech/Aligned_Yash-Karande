@@ -41,12 +41,49 @@ export function AIWeeklyPlan({ weeklyPlan, onPlanUpdate }: AIWeeklyPlanProps) {
 
     const handleRegenerate = async () => {
         const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
-        if (!apiKey) {
-            alert('API key not configured');
-            return;
-        }
 
         setIsRegenerating(true);
+
+        // Fallback plan generator based on user request
+        const generateFallbackPlan = () => {
+            const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const userRequest = adjustmentNote.toLowerCase();
+
+            // Check for specific requests in the user's note
+            const wantsBreakOnFriday = userRequest.includes('break') && userRequest.includes('friday');
+            const wantsRestDays = userRequest.includes('rest');
+            const wantsDeepWork = userRequest.includes('deep work');
+
+            return dayNames.map(day => {
+                if (wantsBreakOnFriday && day === 'Fri') {
+                    return { day, activity: 'Rest day - take a break and recharge' };
+                }
+                if (wantsRestDays && (day === 'Sat' || day === 'Sun')) {
+                    return { day, activity: 'Rest and recover - light activities only' };
+                }
+
+                const activities: Record<string, string> = {
+                    'Mon': wantsDeepWork ? 'Deep work session - focused project time' : 'Start week strong with key priorities',
+                    'Tue': 'Continue momentum - tackle challenging tasks',
+                    'Wed': 'Mid-week review and skill development',
+                    'Thu': 'Collaboration and creative work',
+                    'Fri': wantsRestDays ? 'Light work - wrap up the week' : 'Complete weekly goals and plan ahead',
+                    'Sat': 'Personal project or learning time',
+                    'Sun': 'Rest, reflect, and prepare for next week'
+                };
+
+                return { day, activity: activities[day] || 'Productive focus session' };
+            });
+        };
+
+        if (!apiKey) {
+            console.log('No API key found, using fallback plan generation');
+            // Generate a smart fallback based on user input
+            const fallbackPlan = generateFallbackPlan();
+            setEditablePlan(fallbackPlan);
+            setIsRegenerating(false);
+            return;
+        }
 
         try {
             const prompt = `You are a personal productivity coach. The user wants to adjust their weekly plan.
@@ -55,6 +92,8 @@ Current plan:
 ${weeklyPlan.map(p => `${p.day}: ${p.activity}`).join('\n')}
 
 User's adjustment request: "${adjustmentNote || 'Make it more balanced and realistic'}"
+
+Current time: ${new Date().toISOString()} - Generate a fresh, unique plan.
 
 Generate an improved 7-day weekly plan based on the request. Return ONLY a JSON array with this exact format:
 [
@@ -67,7 +106,7 @@ Generate an improved 7-day weekly plan based on the request. Return ONLY a JSON 
   {"day": "Sun", "activity": "Activity description"}
 ]
 
-Keep activities concise (under 50 characters). Return only JSON.`;
+Keep activities concise (under 50 characters). Be creative and specific to the user's request. Return only JSON.`;
 
             const response = await fetch(
                 `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
@@ -76,7 +115,7 @@ Keep activities concise (under 50 characters). Return only JSON.`;
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.7, maxOutputTokens: 500 },
+                        generationConfig: { temperature: 0.8, maxOutputTokens: 500 },
                     }),
                 }
             );
@@ -92,9 +131,18 @@ Keep activities concise (under 50 characters). Return only JSON.`;
 
                 const newPlan = JSON.parse(text);
                 setEditablePlan(newPlan);
+                console.log('Successfully regenerated plan:', newPlan);
+            } else {
+                console.error('Gemini API error:', response.status, await response.text());
+                // Use fallback plan on API error
+                const fallbackPlan = generateFallbackPlan();
+                setEditablePlan(fallbackPlan);
             }
         } catch (error) {
             console.error('Error regenerating plan:', error);
+            // Use fallback plan on error
+            const fallbackPlan = generateFallbackPlan();
+            setEditablePlan(fallbackPlan);
         } finally {
             setIsRegenerating(false);
         }

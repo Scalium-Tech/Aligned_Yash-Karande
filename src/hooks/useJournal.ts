@@ -12,8 +12,17 @@ interface JournalEntry {
     createdAt: string;
 }
 
+interface BrainDumpEntry {
+    id: string;
+    timestamp: string;
+    content: string;
+    organizedContent?: string;
+    tags?: string[];
+}
+
 interface JournalData {
     entries: JournalEntry[];
+    brainDumps: BrainDumpEntry[];
 }
 
 const JOURNAL_KEY = 'aligned_journal';
@@ -41,12 +50,14 @@ function loadJournal(userId?: string): JournalData {
     const key = getUserStorageKey(JOURNAL_KEY, userId);
     const stored = localStorage.getItem(key);
     if (!stored) {
-        return { entries: [] };
+        return { entries: [], brainDumps: [] };
     }
     try {
-        return JSON.parse(stored);
+        const data = JSON.parse(stored);
+        // Ensure brainDumps array exists for backward compatibility
+        return { entries: data.entries || [], brainDumps: data.brainDumps || [] };
     } catch {
-        return { entries: [] };
+        return { entries: [], brainDumps: [] };
     }
 }
 
@@ -88,7 +99,7 @@ Return ONLY a valid JSON object (no markdown):
         console.log('Generating AI insights for journal entry...');
 
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -209,6 +220,108 @@ export function useJournal(userId?: string) {
         };
     }, [journal]);
 
+    // Brain Dump functions
+    const saveBrainDump = useCallback((content: string) => {
+        const entry: BrainDumpEntry = {
+            id: `braindump-${Date.now()}`,
+            timestamp: new Date().toISOString(),
+            content,
+        };
+
+        const updated = { ...journal };
+        updated.brainDumps = [entry, ...(updated.brainDumps || [])];
+        saveJournal(updated, userId);
+        setJournal(updated);
+        return entry;
+    }, [journal, userId]);
+
+    const getBrainDumps = useCallback((limit: number = 10) => {
+        return (journal.brainDumps || []).slice(0, limit);
+    }, [journal]);
+
+    const organizeBrainDump = useCallback(async (dumpId: string): Promise<string> => {
+        const dump = journal.brainDumps?.find(d => d.id === dumpId);
+        if (!dump) return '';
+
+        const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+
+        // Fallback organization
+        const generateFallback = () => {
+            const lines = dump.content.split(/[.\n]+/).filter(l => l.trim());
+            const tasks = lines.filter(l => l.toLowerCase().includes('need') || l.toLowerCase().includes('must') || l.toLowerCase().includes('should') || l.toLowerCase().includes('call') || l.toLowerCase().includes('buy'));
+            const ideas = lines.filter(l => l.toLowerCase().includes('idea') || l.toLowerCase().includes('maybe') || l.toLowerCase().includes('could'));
+            const rest = lines.filter(l => !tasks.includes(l) && !ideas.includes(l));
+
+            let result = '';
+            if (tasks.length > 0) result += `**📋 Tasks:**\n${tasks.map(t => `• ${t.trim()}`).join('\n')}\n\n`;
+            if (ideas.length > 0) result += `**💡 Ideas:**\n${ideas.map(i => `• ${i.trim()}`).join('\n')}\n\n`;
+            if (rest.length > 0) result += `**💭 Thoughts:**\n${rest.map(r => `• ${r.trim()}`).join('\n')}`;
+
+            return result || '**💭 Thoughts:**\n• ' + dump.content;
+        };
+
+        if (!apiKey) {
+            const organized = generateFallback();
+            // Update the dump with organized content
+            const updated = { ...journal };
+            const dumpIndex = updated.brainDumps?.findIndex(d => d.id === dumpId) ?? -1;
+            if (dumpIndex >= 0 && updated.brainDumps) {
+                updated.brainDumps[dumpIndex] = { ...updated.brainDumps[dumpIndex], organizedContent: organized };
+                saveJournal(updated, userId);
+                setJournal(updated);
+            }
+            return organized;
+        }
+
+        try {
+            const prompt = `You are an AI assistant helping organize a brain dump. The user has written their unstructured thoughts. Organize them into clear categories.
+
+Brain dump content:
+"${dump.content}"
+
+Organize this into the following categories (only include categories that have content):
+- **📋 Tasks:** Action items, things to do
+- **💡 Ideas:** Creative thoughts, possibilities, maybes
+- **💭 Reflections:** Feelings, observations, musings
+- **⚡ Priorities:** Urgent or important items
+
+Format each item as a bullet point. Keep the user's original meaning. Return ONLY the organized content with the category headers.`;
+
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { temperature: 0.5, maxOutputTokens: 500 },
+                    }),
+                }
+            );
+
+            let organized = '';
+            if (response.ok) {
+                const data = await response.json();
+                organized = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || generateFallback();
+            } else {
+                organized = generateFallback();
+            }
+
+            // Update the dump with organized content
+            const updated = { ...journal };
+            const dumpIndex = updated.brainDumps?.findIndex(d => d.id === dumpId) ?? -1;
+            if (dumpIndex >= 0 && updated.brainDumps) {
+                updated.brainDumps[dumpIndex] = { ...updated.brainDumps[dumpIndex], organizedContent: organized };
+                saveJournal(updated, userId);
+                setJournal(updated);
+            }
+            return organized;
+        } catch (error) {
+            console.error('Error organizing brain dump:', error);
+            return generateFallback();
+        }
+    }, [journal, userId]);
+
     return {
         journal,
         todayEntry,
@@ -217,5 +330,9 @@ export function useJournal(userId?: string) {
         getRecentEntries,
         getWeeklySummary,
         isGeneratingAI,
+        // Brain Dump exports
+        saveBrainDump,
+        getBrainDumps,
+        organizeBrainDump,
     };
 }

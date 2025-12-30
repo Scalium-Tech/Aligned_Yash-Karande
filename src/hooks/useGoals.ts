@@ -107,7 +107,7 @@ export function useGoals(userId?: string) {
                 ...prev,
                 challenges: [challenge, ...prev.challenges],
             };
-            saveGoalsData(updated);
+            saveGoalsData(updated, userId);
 
             // Check for challenger badge inline
             const badgeUpdated = { ...updated };
@@ -118,14 +118,14 @@ export function useGoals(userId?: string) {
                 return badge;
             });
             if (JSON.stringify(badgeUpdated.badges) !== JSON.stringify(updated.badges)) {
-                saveGoalsData(badgeUpdated);
+                saveGoalsData(badgeUpdated, userId);
                 return badgeUpdated;
             }
             return updated;
         });
 
         return challenge;
-    }, []);
+    }, [userId]);
 
     const checkInChallenge = useCallback((challengeId: string) => {
         const todayKey = getTodayKey();
@@ -172,10 +172,10 @@ export function useGoals(userId?: string) {
                 });
             }
 
-            saveGoalsData(updated);
+            saveGoalsData(updated, userId);
             return updated;
         });
-    }, []);
+    }, [userId]);
 
     const deleteChallenge = useCallback((challengeId: string) => {
         setGoalsData(prev => {
@@ -183,10 +183,10 @@ export function useGoals(userId?: string) {
                 ...prev,
                 challenges: prev.challenges.filter(c => c.id !== challengeId),
             };
-            saveGoalsData(updated);
+            saveGoalsData(updated, userId);
             return updated;
         });
-    }, []);
+    }, [userId]);
 
     const checkBadgeUnlock = useCallback((type: Badge['requirement']['type'], value: number) => {
         let badgeUnlocked = false;
@@ -201,14 +201,14 @@ export function useGoals(userId?: string) {
             });
 
             if (badgeUnlocked) {
-                saveGoalsData(updated);
+                saveGoalsData(updated, userId);
                 return updated;
             }
             return prev;
         });
 
         return badgeUnlocked;
-    }, []);
+    }, [userId]);
 
     const checkAllBadges = useCallback((stats: { streak: number; focus: number; tasks: number; journal: number }) => {
         setGoalsData(prev => {
@@ -245,12 +245,12 @@ export function useGoals(userId?: string) {
             });
 
             if (anyUnlocked) {
-                saveGoalsData(updated);
+                saveGoalsData(updated, userId);
                 return updated;
             }
             return prev;
         });
-    }, []);
+    }, [userId]);
 
     const getActiveChallenges = useCallback(() => {
         return goalsData.challenges.filter(c => c.isActive);

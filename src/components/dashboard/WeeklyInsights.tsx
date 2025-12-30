@@ -119,8 +119,41 @@ export function WeeklyInsights() {
     // Generate AI weekly summary
     const generateAISummary = async () => {
         const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+
+        // Smart fallback based on actual stats
+        const generateFallback = () => {
+            let summary = '';
+
+            if (totalFocusMinutes > 60 && totalTasks > 3) {
+                summary = `Excellent week! You logged ${totalFocusMinutes} minutes of focus and completed ${totalTasks} tasks. Your productivity is on fire! `;
+            } else if (totalFocusMinutes > 0 || totalTasks > 0) {
+                summary = `You logged ${totalFocusMinutes} minutes of focus and completed ${totalTasks} tasks this week. `;
+            }
+
+            if (analytics.currentStreak >= 3) {
+                summary += `Your ${analytics.currentStreak}-day streak shows real commitment! `;
+            }
+
+            if (challengeCheckIns > 0) {
+                summary += `You made ${challengeCheckIns} check-in${challengeCheckIns > 1 ? 's' : ''} on your 90-day challenges. `;
+            }
+
+            if (activeDays >= 5) {
+                summary += `Being active ${activeDays}/7 days shows consistency. `;
+            }
+
+            if (summary === '') {
+                summary = "This week is a fresh start! Set some focus time, complete a task, or write a journal entry to get your week going. Small steps lead to big changes.";
+            } else {
+                summary += "Keep building on this momentum!";
+            }
+
+            return summary;
+        };
+
         if (!apiKey) {
-            setAiSummary("Great week! You showed up consistently. Keep building on this momentum.");
+            console.log('No API key found, using fallback summary');
+            setAiSummary(generateFallback());
             return;
         }
 
@@ -143,7 +176,7 @@ Weekly Stats:
 
 Recent journal entries: ${entriesText}
 
-Be encouraging but honest. Mention specific achievements in goals or challenges if any. Suggest one thing for next week.`;
+Be encouraging but honest. Mention specific achievements in goals or challenges if any. If stats are low, be supportive about starting fresh. Suggest one thing for next week.`;
 
             const response = await fetch(
                 `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
@@ -152,7 +185,7 @@ Be encouraging but honest. Mention specific achievements in goals or challenges 
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.7, maxOutputTokens: 150 },
+                        generationConfig: { temperature: 0.8, maxOutputTokens: 200 },
                     }),
                 }
             );
@@ -162,11 +195,17 @@ Be encouraging but honest. Mention specific achievements in goals or challenges 
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
                 if (text) {
                     setAiSummary(text);
+                    console.log('Generated AI weekly summary:', text);
+                } else {
+                    setAiSummary(generateFallback());
                 }
+            } else {
+                console.error('Gemini API error:', response.status);
+                setAiSummary(generateFallback());
             }
         } catch (error) {
             console.error('Error generating summary:', error);
-            setAiSummary("You're making progress! Keep showing up consistently.");
+            setAiSummary(generateFallback());
         } finally {
             setIsLoading(false);
         }

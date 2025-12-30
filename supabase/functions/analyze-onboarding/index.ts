@@ -12,10 +12,10 @@ serve(async (req) => {
   }
 
   try {
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
-    if (!lovableApiKey) {
-      console.error('LOVABLE_API_KEY not configured');
-      throw new Error('LOVABLE_API_KEY is not configured');
+    const googleApiKey = Deno.env.get('GOOGLE_API_KEY');
+    if (!googleApiKey) {
+      console.error('GOOGLE_API_KEY not configured');
+      throw new Error('GOOGLE_API_KEY is not configured');
     }
 
     const { userIdentity } = await req.json();
@@ -78,7 +78,7 @@ Generate a JSON response with this exact structure:
     {"name": "Sleep", "value": "Based on sleep_definition", "icon": "moon"},
     {"name": "Water", "value": "2,000", "unit": "ml"}
   ],
-  "focus_duration_minutes": "Number derived from daily_time_capacity (e.g., '45 mins' -> 45)",
+  "focus_duration_minutes": 45,
   "identity_reflection": "Personalized reflection about who they're becoming based on identity_statement (1-2 sentences)",
   "quarter_goal": "Current quarter's goal from quarterly_goals explained in 1 sentence",
   "focus_block_duration": "Duration like '30-45 min' based on their daily_time_capacity",
@@ -98,29 +98,35 @@ IMPORTANT RULES:
 2. Use their exact words and phrases where possible
 3. If a field was "Not provided", make a reasonable inference from related fields
 4. For icons, use only: user, briefcase, target, graduation-cap, edit-3, moon, droplet, activity, heart, book, dumbbell
-5. focus_duration_minutes must be a number (extract from their daily_time_capacity text)
+5. focus_duration_minutes must be a number (extract from their daily_time_capacity text, default to 45)
 6. Return ONLY valid JSON, no markdown or extra text`;
 
-    console.log('Calling Lovable AI Gateway...');
+    console.log('Calling Google Gemini API...');
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${lovableApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: 'You are a personal growth coach AI. Analyze user responses carefully and generate PERSONALIZED content that directly reflects their specific goals, habits, and circumstances. Always respond with valid JSON only.' },
-          { role: 'user', content: prompt }
-        ],
-      }),
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${googleApiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 2048,
+          }
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Lovable AI Gateway error:', response.status, errorText);
+      console.error('Google Gemini API error:', response.status, errorText);
 
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again in a moment.' }), {
@@ -128,20 +134,20 @@ IMPORTANT RULES:
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: 'AI credits depleted. Please add credits to continue.' }), {
-          status: 402,
+      if (response.status === 403) {
+        return new Response(JSON.stringify({ error: 'API key invalid or unauthorized. Please check your Google API key.' }), {
+          status: 403,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      throw new Error(`AI Gateway error: ${response.status} - ${errorText}`);
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
-    console.log('Lovable AI response:', JSON.stringify(data, null, 2));
+    console.log('Google Gemini response:', JSON.stringify(data, null, 2));
 
-    const generatedText = data.choices?.[0]?.message?.content;
+    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!generatedText) {
       console.error('No generated text in response');

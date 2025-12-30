@@ -21,7 +21,7 @@ export const blogPosts: BlogPost[] = [
     category: 'Personal Growth',
     author: 'Yash Karande',
     authorBio: 'Founder of Aligned & personal growth enthusiast passionate about helping people become their best selves.',
-    date: 'December 20, 2024',
+    date: 'December 20, 2025',
     readTime: '8 min read',
     featured: true,
     content: `
@@ -120,7 +120,7 @@ This isn't about productivity hacking or optimization. It's about becoming the b
     category: 'Productivity',
     author: 'Yash Karande',
     authorBio: 'Founder of Aligned & personal growth enthusiast passionate about helping people become their best selves.',
-    date: 'December 18, 2024',
+    date: 'December 18, 2025',
     readTime: '6 min read',
     featured: true,
     content: `
@@ -241,7 +241,7 @@ The tortoise really does beat the hare—not through speed, but through sustaina
     category: 'Lifestyle',
     author: 'Yash Karande',
     authorBio: 'Founder of Aligned & personal growth enthusiast passionate about helping people become their best selves.',
-    date: 'December 15, 2024',
+    date: 'December 15, 2025',
     readTime: '5 min read',
     featured: false,
     content: `
@@ -367,7 +367,7 @@ Permission to change is permission to grow.
     category: 'Mindfulness',
     author: 'Yash Karande',
     authorBio: 'Founder of Aligned & personal growth enthusiast passionate about helping people become their best selves.',
-    date: 'December 12, 2024',
+    date: 'December 12, 2025',
     readTime: '4 min read',
     featured: false,
     content: `
@@ -480,7 +480,7 @@ But start with daily. Master that first.
     category: 'Technology',
     author: 'Yash Karande',
     authorBio: 'Founder of Aligned & personal growth enthusiast passionate about helping people become their best selves.',
-    date: 'December 10, 2024',
+    date: 'December 10, 2025',
     readTime: '7 min read',
     featured: false,
     content: `
@@ -620,7 +620,7 @@ Regularly assess whether AI tools are actually helping. Ditch what doesn't serve
     category: 'Productivity',
     author: 'Yash Karande',
     authorBio: 'Founder of Aligned & personal growth enthusiast passionate about helping people become their best selves.',
-    date: 'December 8, 2024',
+    date: 'December 8, 2025',
     readTime: '6 min read',
     featured: false,
     content: `

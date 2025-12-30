@@ -21,16 +21,16 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       {/* Hero Section */}
       <section className="pt-32 pb-16 relative overflow-hidden">
         <div className="absolute inset-0 bg-[var(--gradient-hero)]" />
         <div className="absolute top-20 right-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] dark:bg-primary/15" />
-        
+
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <AnimatedSection className="max-w-3xl mx-auto">
-            <Link 
-              to="/blog" 
+            <Link
+              to="/blog"
               className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors mb-8"
             >
               <ArrowLeft size={16} />
@@ -57,8 +57,12 @@ const BlogPost = () => {
 
             <div className="flex items-center justify-between flex-wrap gap-4 pt-6 border-t border-border/50 dark:border-primary/10">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-purple-dark flex items-center justify-center">
-                  <User size={20} className="text-primary-foreground" />
+                <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-primary/20">
+                  <img
+                    src="/founder-yash-karande.jpg"
+                    alt={post.author}
+                    className="w-full h-full object-cover object-top"
+                  />
                 </div>
                 <div>
                   <p className="font-medium text-foreground">{post.author}</p>
@@ -110,13 +114,17 @@ const BlogPost = () => {
       {/* Author Bio */}
       <section className="py-12 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-violet-light/20 to-background dark:via-primary/5" />
-        
+
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
           <AnimatedSection className="max-w-3xl mx-auto">
             <div className="glass-card rounded-2xl p-6 lg:p-8 dark:border-primary/20">
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-purple-dark flex items-center justify-center flex-shrink-0">
-                  <User size={28} className="text-primary-foreground" />
+                <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-primary/20 flex-shrink-0">
+                  <img
+                    src="/founder-yash-karande.jpg"
+                    alt={post.author}
+                    className="w-full h-full object-cover object-top"
+                  />
                 </div>
                 <div>
                   <h3 className="font-display font-bold text-lg text-foreground mb-1">
@@ -155,11 +163,11 @@ const BlogPost = () => {
                             {relatedPost.readTime}
                           </span>
                         </div>
-                        
+
                         <h3 className="font-display font-semibold text-lg text-foreground mb-3 group-hover:text-primary transition-colors leading-tight">
                           {relatedPost.title}
                         </h3>
-                        
+
                         <p className="text-muted-foreground text-sm line-clamp-2">
                           {relatedPost.excerpt}
                         </p>
@@ -182,11 +190,13 @@ const BlogPost = () => {
                 Ready to start your intentional living journey?
               </h2>
               <p className="text-muted-foreground mb-6">
-                Join thousands who are using Kairos to align their daily actions with their deeper purpose.
+                Join thousands who are using Aligned to align their daily actions with their deeper purpose.
               </p>
-              <Button className="bg-gradient-to-r from-primary to-purple-dark hover:opacity-90 text-primary-foreground font-medium px-8 py-6 text-lg shadow-lg shadow-primary/20">
-                Get Started Free
-              </Button>
+              <Link to="/signup">
+                <Button className="bg-gradient-to-r from-primary to-purple-dark hover:opacity-90 text-primary-foreground font-medium px-8 py-6 text-lg shadow-lg shadow-primary/20">
+                  Get Started Free
+                </Button>
+              </Link>
             </div>
           </AnimatedSection>
         </div>

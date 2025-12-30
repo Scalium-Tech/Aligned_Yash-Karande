@@ -10,7 +10,8 @@ const footerLinks = {
   company: [
     { label: 'About Us', href: '/about' },
     { label: 'Blog', href: '/blog' },
-    { label: 'Careers', href: '/careers' },
+  ],
+  support: [
     { label: 'Contact Us', href: '/contact' },
     { label: 'Share Feedback', href: '/feedback' },
   ],
@@ -22,8 +23,7 @@ const footerLinks = {
   connect: [
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/yash-karande-b3544a2a1/' },
     { label: 'Twitter', href: 'https://x.com/YashK57440' },
-    { label: 'Instagram', href: '#' },
-    { label: 'Discord', href: '#' },
+    { label: 'Instagram', href: 'https://www.instagram.com/yash_18oct/' },
   ],
 };
 
@@ -60,14 +60,15 @@ export function Footer() {
       <div className="absolute inset-0 bg-gradient-to-b from-background to-muted/30 dark:to-primary/5" />
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 relative">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-10 lg:gap-12">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-10 lg:gap-12">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <a href="#" className="flex items-center gap-2.5 mb-5 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-dark flex items-center justify-center shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-shadow dark:shadow-primary/30">
-                <span className="text-primary-foreground font-display font-bold text-xl">A</span>
-              </div>
-              <span className="font-display font-semibold text-xl text-foreground">Aligned</span>
+            <a href="/" className="flex items-center mb-5 group">
+              <img
+                src="/logo.png"
+                alt="Aligned"
+                className="h-12 w-auto"
+              />
             </a>
             <p className="text-sm text-muted-foreground mb-5 max-w-xs leading-relaxed">
               Stay consistent by aligning who you are with what you do.
@@ -100,6 +101,23 @@ export function Footer() {
             <h4 className="font-semibold text-foreground mb-5">Company</h4>
             <ul className="space-y-3.5">
               {footerLinks.company.map((link) => (
+                <li key={link.label}>
+                  <a
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Support Links */}
+          <div>
+            <h4 className="font-semibold text-foreground mb-5">Support</h4>
+            <ul className="space-y-3.5">
+              {footerLinks.support.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}

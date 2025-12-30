@@ -102,14 +102,22 @@ export function FocusSessions({ userIdentities }: FocusSessionsProps) {
     const generateFocusTasks = useCallback(async () => {
         const selectedIdentity = userIdentities?.find(i => i.selected)?.name || 'professional';
         const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+        const timestamp = Date.now();
+
+        // Clear existing tasks first to show visual feedback
+        setFocusTasks([]);
 
         if (!apiKey) {
+            console.log('No API key found, using fallback tasks');
             const fallbackTasks = [
-                { id: '1', title: `Deep work: ${selectedIdentity} skill building`, duration: 45, completed: false },
-                { id: '2', title: 'Learn something new in your field', duration: 30, completed: false },
-                { id: '3', title: 'Review and reflect on progress', duration: 15, completed: false },
+                { id: `${timestamp}-1`, title: `Deep work: ${selectedIdentity} skill building`, duration: 45, completed: false },
+                { id: `${timestamp}-2`, title: 'Learn something new in your field', duration: 30, completed: false },
+                { id: `${timestamp}-3`, title: 'Practice and refine core skills', duration: 25, completed: false },
+                { id: `${timestamp}-4`, title: 'Review and reflect on progress', duration: 15, completed: false },
             ];
             setFocusTasks(fallbackTasks);
+            const key = getUserStorageKey('aligned_focus_tasks', user?.id);
+            localStorage.setItem(key, JSON.stringify(fallbackTasks));
             return;
         }
 
@@ -118,7 +126,9 @@ export function FocusSessions({ userIdentities }: FocusSessionsProps) {
         try {
             const prompt = `You are a productivity coach. The user identifies as: "${selectedIdentity}"
 
-Generate 4 focused work sessions tailored to this identity. Each session should help them become better at their craft.
+Generate 4 unique and creative focused work sessions tailored to this identity. Each session should help them become better at their craft.
+
+Current time: ${new Date().toISOString()} - Use this to ensure variety in suggestions.
 
 Return ONLY a JSON array with this exact format:
 [
@@ -128,7 +138,7 @@ Return ONLY a JSON array with this exact format:
   {"id": "4", "title": "Session title", "duration": 20, "completed": false}
 ]
 
-Make titles specific and actionable (e.g., "Build a portfolio project" not "Work on skills").
+Make titles specific, actionable, and DIFFERENT from typical suggestions (e.g., "Build a REST API endpoint" not "Work on skills").
 Vary durations between 15-60 minutes.
 Return only JSON, no other text.`;
 
@@ -139,7 +149,7 @@ Return only JSON, no other text.`;
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.8, maxOutputTokens: 500 },
+                        generationConfig: { temperature: 0.9, maxOutputTokens: 500 },
                     }),
                 }
             );
@@ -153,13 +163,41 @@ Return only JSON, no other text.`;
                 if (text.endsWith('```')) text = text.slice(0, -3);
                 text = text.trim();
 
-                const tasks = JSON.parse(text);
+                const parsedTasks = JSON.parse(text);
+                // Add unique timestamps to task IDs to prevent caching issues
+                const tasks = parsedTasks.map((task: any, index: number) => ({
+                    ...task,
+                    id: `${timestamp}-${index + 1}`,
+                }));
                 setFocusTasks(tasks);
                 const key = getUserStorageKey('aligned_focus_tasks', user?.id);
                 localStorage.setItem(key, JSON.stringify(tasks));
+                console.log('Successfully generated new focus tasks:', tasks);
+            } else {
+                // API returned error - show fallback tasks
+                console.error('Gemini API error:', response.status, await response.text());
+                const fallbackTasks = [
+                    { id: `${timestamp}-1`, title: `Deep work: ${selectedIdentity} skill building`, duration: 45, completed: false },
+                    { id: `${timestamp}-2`, title: 'Learn something new in your field', duration: 30, completed: false },
+                    { id: `${timestamp}-3`, title: 'Practice and refine core skills', duration: 25, completed: false },
+                    { id: `${timestamp}-4`, title: 'Review and reflect on progress', duration: 15, completed: false },
+                ];
+                setFocusTasks(fallbackTasks);
+                const key = getUserStorageKey('aligned_focus_tasks', user?.id);
+                localStorage.setItem(key, JSON.stringify(fallbackTasks));
             }
         } catch (error) {
             console.error('Error generating tasks:', error);
+            // Show fallback tasks on error
+            const fallbackTasks = [
+                { id: `${timestamp}-1`, title: `Deep work: ${selectedIdentity} skill building`, duration: 45, completed: false },
+                { id: `${timestamp}-2`, title: 'Learn something new in your field', duration: 30, completed: false },
+                { id: `${timestamp}-3`, title: 'Practice and refine core skills', duration: 25, completed: false },
+                { id: `${timestamp}-4`, title: 'Review and reflect on progress', duration: 15, completed: false },
+            ];
+            setFocusTasks(fallbackTasks);
+            const key = getUserStorageKey('aligned_focus_tasks', user?.id);
+            localStorage.setItem(key, JSON.stringify(fallbackTasks));
         } finally {
             setIsGeneratingTasks(false);
         }

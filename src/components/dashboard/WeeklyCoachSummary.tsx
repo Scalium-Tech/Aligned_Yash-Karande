@@ -3,10 +3,12 @@ import { motion } from 'framer-motion';
 import { Sparkles, Calendar, TrendingUp, Loader2 } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useJournal } from '@/hooks/useJournal';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function WeeklyCoachSummary() {
-    const { analytics, getWeeklyData } = useAnalytics();
-    const { getWeeklySummary, getRecentEntries } = useJournal();
+    const { user } = useAuth();
+    const { analytics, getWeeklyData } = useAnalytics(user?.id);
+    const { getWeeklySummary, getRecentEntries } = useJournal(user?.id);
     const [aiSummary, setAiSummary] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -14,39 +16,76 @@ export function WeeklyCoachSummary() {
     const journalSummary = getWeeklySummary();
     const recentEntries = getRecentEntries(7);
 
+    // Calculate stats
+    const totalFocus = weeklyData.reduce((sum, d) => sum + d.focusMinutes, 0);
+    const totalTasks = weeklyData.reduce((sum, d) => sum + d.tasksCompleted, 0);
+    const activeDays = weeklyData.filter(d => d.focusMinutes > 0 || d.tasksCompleted > 0).length;
+
     useEffect(() => {
         generateWeeklySummary();
-    }, []);
+    }, [analytics, journalSummary.entriesCount]);
+
+    const generateFallbackSummary = () => {
+        // Generate a contextual fallback based on actual data
+        if (totalFocus === 0 && totalTasks === 0 && journalSummary.entriesCount === 0) {
+            return "Welcome to your weekly summary! Start tracking your progress by completing focus sessions, tasks, or journal entries. Small steps lead to big changes.";
+        }
+
+        let summary = "";
+
+        if (totalFocus > 0) {
+            summary += `You've logged ${totalFocus} minutes of focused work this week. `;
+        }
+
+        if (totalTasks > 0) {
+            summary += `You completed ${totalTasks} task${totalTasks > 1 ? 's' : ''}, showing great productivity. `;
+        }
+
+        if (analytics.currentStreak > 0) {
+            summary += `Your ${analytics.currentStreak}-day streak shows impressive consistency! `;
+        }
+
+        if (journalSummary.entriesCount > 0) {
+            summary += `With ${journalSummary.entriesCount} journal entr${journalSummary.entriesCount > 1 ? 'ies' : 'y'}, you're building self-awareness. `;
+        }
+
+        if (summary === "") {
+            summary = "Keep building momentum! Every small action counts toward your goals. Try setting a focus session or writing a quick reflection.";
+        } else {
+            summary += "Keep up the great work!";
+        }
+
+        return summary;
+    };
 
     const generateWeeklySummary = async () => {
         const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+
         if (!apiKey) {
-            setAiSummary("Great job showing up this week! Keep building momentum with small, consistent actions.");
+            console.log('No API key found, using fallback summary');
+            setAiSummary(generateFallbackSummary());
             return;
         }
 
         setIsLoading(true);
 
-        const totalFocus = weeklyData.reduce((sum, d) => sum + d.focusMinutes, 0);
-        const totalTasks = weeklyData.reduce((sum, d) => sum + d.tasksCompleted, 0);
-        const activeDays = weeklyData.filter(d => d.focusMinutes > 0 || d.tasksCompleted > 0).length;
-
         const prompt = `You are a supportive weekly coach for a personal growth app. Generate a brief, encouraging weekly summary (2-3 sentences) based on this data:
 
-- Focus time: ${totalFocus} minutes total
+- Focus time: ${totalFocus} minutes total this week
 - Tasks completed: ${totalTasks}
 - Active days: ${activeDays}/7
 - Current streak: ${analytics.currentStreak} days
 - Journal entries: ${journalSummary.entriesCount}
-- Dominant mood: ${journalSummary.dominantMood || 'not tracked'}
+- Dominant mood: ${journalSummary.dominantMood || 'not tracked yet'}
 
 Guidelines:
 - Be warm and encouraging, not preachy
-- Acknowledge specific achievements
+- Acknowledge specific achievements if any
+- If stats are low or zero, be supportive about starting fresh
 - Offer one gentle suggestion for next week
 - Keep it personal and motivating
 
-Return only the summary text, no formatting.`;
+Return only the summary text, no formatting or quotes.`;
 
         try {
             const response = await fetch(
@@ -64,19 +103,23 @@ Return only the summary text, no formatting.`;
             if (response.ok) {
                 const data = await response.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-                setAiSummary(text || "You're making progress! Every small step counts toward becoming who you want to be.");
+                if (text) {
+                    setAiSummary(text);
+                    console.log('Generated weekly summary:', text);
+                } else {
+                    setAiSummary(generateFallbackSummary());
+                }
             } else {
-                setAiSummary("You're making progress! Every small step counts toward becoming who you want to be.");
+                console.error('Gemini API error:', response.status);
+                setAiSummary(generateFallbackSummary());
             }
-        } catch {
-            setAiSummary("You're making progress! Every small step counts toward becoming who you want to be.");
+        } catch (error) {
+            console.error('Error generating weekly summary:', error);
+            setAiSummary(generateFallbackSummary());
         } finally {
             setIsLoading(false);
         }
     };
-
-    const totalFocus = weeklyData.reduce((sum, d) => sum + d.focusMinutes, 0);
-    const totalTasks = weeklyData.reduce((sum, d) => sum + d.tasksCompleted, 0);
 
     return (
         <motion.div

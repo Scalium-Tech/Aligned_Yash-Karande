@@ -60,11 +60,12 @@ export default function Login() {
       <div className="w-full max-w-md">
         <div className="glass-card rounded-2xl p-8 shadow-xl">
           <div className="text-center mb-8">
-            <Link to="/" className="inline-flex items-center gap-2.5 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-violet flex items-center justify-center shadow-lg shadow-primary/20">
-                <span className="text-primary-foreground font-bold text-xl">A</span>
-              </div>
-              <span className="font-semibold text-2xl text-foreground">Aligned</span>
+            <Link to="/" className="inline-flex items-center mb-6">
+              <img
+                src="/logo.png"
+                alt="Aligned"
+                className="h-14 w-auto"
+              />
             </Link>
             <h1 className="text-2xl font-bold text-foreground mb-2">Welcome Back</h1>
             <p className="text-muted-foreground">Sign in to your account</p>

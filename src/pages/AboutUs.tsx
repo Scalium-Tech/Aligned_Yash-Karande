@@ -1,7 +1,7 @@
 import { Navbar } from '@/components/landing/Navbar';
 import { Footer } from '@/components/landing/Footer';
 import { AnimatedSection } from '@/components/landing/AnimatedSection';
-import { Heart, Target, Users, Sparkles, Shield } from 'lucide-react';
+import { Heart, Target, Users, Sparkles, Shield, CheckCircle2 } from 'lucide-react';
 
 const values = [
   {
@@ -24,6 +24,15 @@ const values = [
     title: 'Privacy First',
     description: 'Your data belongs to you. We never sell it, ever.',
   },
+];
+
+const whyChooseUsFeatures = [
+  'All-in-one productivity system — no more app-hopping',
+  'AI-powered insights tailored to your goals and habits',
+  'Focus on identity and values, not just tasks',
+  'Zero streak pressure — be kind to yourself',
+  'Beautiful, calming interface designed to reduce overwhelm',
+  'Your data stays with you — privacy first, always',
 ];
 
 const AboutUs = () => {
@@ -137,6 +146,75 @@ const AboutUs = () => {
                 </div>
               </AnimatedSection>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Why Choose Us Section */}
+      <section className="py-20 relative">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+            {/* Left Content */}
+            <AnimatedSection>
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/10 rounded-full text-sm font-medium mb-6">
+                <CheckCircle2 size={14} className="text-primary" />
+                Why Choose Us
+              </span>
+              <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4">
+                What Makes Aligned Different
+              </h2>
+              <p className="text-muted-foreground mb-8 leading-relaxed">
+                This isn't just another productivity app. It's built by someone who understands
+                the chaos of juggling goals, the guilt of missed streaks, and the need for a system
+                that actually works with your life.
+              </p>
+
+              {/* Feature List */}
+              <div className="space-y-4">
+                {whyChooseUsFeatures.map((feature, index) => (
+                  <AnimatedSection key={index} delay={index * 50}>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                      <span className="text-foreground">{feature}</span>
+                    </div>
+                  </AnimatedSection>
+                ))}
+              </div>
+            </AnimatedSection>
+
+            {/* Right - Founder Quote Card */}
+            <AnimatedSection delay={100} className="flex justify-center lg:justify-end">
+              <div className="relative max-w-md">
+                <div className="bg-gradient-to-br from-primary to-purple-dark rounded-2xl p-8 text-white shadow-2xl shadow-primary/30">
+                  {/* Quote marks */}
+                  <div className="text-5xl font-serif opacity-50 mb-4">"</div>
+
+                  <p className="text-lg leading-relaxed mb-6">
+                    I built Aligned because I wish I had something like this when I was struggling
+                    with scattered goals and endless to-do lists. Everyone deserves a calm, focused
+                    system that helps them become who they want to be.
+                  </p>
+
+                  {/* Author */}
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full overflow-hidden ring-2 ring-white/30">
+                      <img
+                        src="/founder-yash-karande.jpg"
+                        alt="Yash Karande"
+                        className="w-full h-full object-cover object-top"
+                      />
+                    </div>
+                    <div>
+                      <p className="font-semibold">Yash Karande</p>
+                      <p className="text-white/70 text-sm">Founder & Creator</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Decorative blur behind card */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary to-purple-dark rounded-2xl blur-2xl opacity-30 -z-10 translate-y-4" />
+              </div>
+            </AnimatedSection>
           </div>
         </div>
       </section>

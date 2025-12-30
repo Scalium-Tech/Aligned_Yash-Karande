@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { AlertTriangle, Lightbulb, TrendingDown, TrendingUp, Clock, Zap, Target, Brain, RefreshCw } from 'lucide-react';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useJournal } from '@/hooks/useJournal';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 
 interface FrictionAlert {
@@ -15,8 +16,9 @@ interface FrictionAlert {
 }
 
 export function FrictionAlerts() {
-    const { analytics, getWeeklyData } = useAnalytics();
-    const { getWeeklySummary, getRecentEntries } = useJournal();
+    const { user } = useAuth();
+    const { analytics, getWeeklyData } = useAnalytics(user?.id);
+    const { getWeeklySummary, getRecentEntries } = useJournal(user?.id);
     const [aiInsight, setAiInsight] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -24,28 +26,63 @@ export function FrictionAlerts() {
     const journalSummary = getWeeklySummary();
     const recentEntries = getRecentEntries(3);
 
-    // Generate AI insight based on journal entries
+    // Calculate stats for insights
+    const totalFocus = weeklyData.reduce((sum, d) => sum + d.focusMinutes, 0);
+    const totalTasks = weeklyData.reduce((sum, d) => sum + d.tasksCompleted, 0);
+
+    // Generate fallback insight based on data patterns
+    const generateFallbackInsight = () => {
+        if (totalFocus > 60 && totalTasks > 3) {
+            return `You've been remarkably productive this week with ${totalFocus} minutes of focus and ${totalTasks} tasks completed. Consider scheduling some rest to maintain this momentum.`;
+        }
+        if (analytics.currentStreak >= 3) {
+            return `Your ${analytics.currentStreak}-day streak shows real commitment to your goals. Keep showing up daily - consistency is building your new identity.`;
+        }
+        if (totalFocus > 0) {
+            return `You've logged ${totalFocus} minutes of focused work. Try setting a specific time tomorrow for your next focus session to build a rhythm.`;
+        }
+        if (totalTasks > 0) {
+            return `${totalTasks} tasks completed this week - you're making progress. Consider breaking larger goals into smaller, actionable tasks.`;
+        }
+        if (journalSummary.entriesCount > 0) {
+            return `Journaling is a powerful habit. Your ${journalSummary.entriesCount} entries show you're building self-awareness. Keep reflecting on your progress.`;
+        }
+        return "Start your journey by completing a focus session, finishing a small task, or writing a brief journal entry. Small steps lead to big transformations.";
+    };
+
+    // Generate AI insight based on journal entries and activity
     const generateAIInsight = async () => {
         const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
-        if (!apiKey || recentEntries.length === 0) return;
 
         setIsLoading(true);
+
+        // If no API key, use fallback
+        if (!apiKey) {
+            console.log('No API key found, using fallback insight');
+            setAiInsight(generateFallbackInsight());
+            setIsLoading(false);
+            return;
+        }
+
         try {
-            const entriesText = recentEntries
-                .map(e => `${e.date} (mood: ${e.mood}): ${e.content}`)
-                .join('\n');
+            // Build context from journal entries if available
+            const entriesText = recentEntries.length > 0
+                ? recentEntries.map(e => `${e.date} (mood: ${e.mood}): ${e.content}`).join('\n')
+                : 'No journal entries yet this week.';
 
-            const totalFocus = weeklyData.reduce((sum, d) => sum + d.focusMinutes, 0);
-            const totalTasks = weeklyData.reduce((sum, d) => sum + d.tasksCompleted, 0);
-
-            const prompt = `You are a compassionate AI coach. Based on the user's recent journal entries and activity, provide ONE short, specific, actionable insight (2 sentences max).
+            const prompt = `You are a compassionate AI coach. Based on the user's recent activity and journal entries, provide ONE short, specific, actionable insight (2-3 sentences max).
 
 Journal entries:
 ${entriesText}
 
-Weekly stats: ${totalFocus} focus mins, ${totalTasks} tasks done, ${analytics.currentStreak} day streak
+Weekly stats: 
+- Focus time: ${totalFocus} minutes
+- Tasks completed: ${totalTasks}
+- Current streak: ${analytics.currentStreak} days
+- Journal entries: ${journalSummary.entriesCount}
+- Dominant mood: ${journalSummary.dominantMood || 'not tracked'}
 
-Focus on: patterns you notice, gentle encouragement, or a specific suggestion. Be warm but concise.`;
+Focus on: patterns you notice, gentle encouragement, or a specific suggestion based on their data. Be warm but concise. If they're starting fresh, encourage small wins.`;
 
             const response = await fetch(
                 `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
@@ -54,7 +91,7 @@ Focus on: patterns you notice, gentle encouragement, or a specific suggestion. B
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { temperature: 0.7, maxOutputTokens: 100 },
+                        generationConfig: { temperature: 0.8, maxOutputTokens: 150 },
                     }),
                 }
             );
@@ -64,21 +101,28 @@ Focus on: patterns you notice, gentle encouragement, or a specific suggestion. B
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
                 if (text) {
                     setAiInsight(text);
+                    console.log('Generated AI insight:', text);
+                } else {
+                    setAiInsight(generateFallbackInsight());
                 }
+            } else {
+                console.error('Gemini API error:', response.status);
+                setAiInsight(generateFallbackInsight());
             }
         } catch (error) {
             console.error('Error generating AI insight:', error);
+            setAiInsight(generateFallbackInsight());
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Auto-generate AI insight on mount if there are journal entries
+    // Auto-generate insight on mount
     useEffect(() => {
-        if (recentEntries.length > 0 && !aiInsight) {
+        if (!aiInsight) {
             generateAIInsight();
         }
-    }, [recentEntries.length]);
+    }, [analytics, journalSummary.entriesCount]);
 
     // Generate rule-based alerts
     const generateAlerts = (): FrictionAlert[] => {
@@ -264,7 +308,7 @@ Focus on: patterns you notice, gentle encouragement, or a specific suggestion. B
                     variant="ghost"
                     size="sm"
                     className="w-full mt-2"
-                    disabled={isLoading || recentEntries.length === 0}
+                    disabled={isLoading}
                 >
                     {isLoading ? (
                         <>

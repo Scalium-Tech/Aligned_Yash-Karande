@@ -53,22 +53,12 @@ export function Sidebar({ activeSection, onSectionChange, onLogout }: SidebarPro
         >
             {/* Logo */}
             <div className="h-16 flex items-center justify-between px-4 border-b border-border/50">
-                <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-violet flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
-                        <span className="text-primary-foreground font-bold text-lg">A</span>
-                    </div>
-                    <AnimatePresence>
-                        {!isCollapsed && (
-                            <motion.span
-                                initial={{ opacity: 0, width: 0 }}
-                                animate={{ opacity: 1, width: 'auto' }}
-                                exit={{ opacity: 0, width: 0 }}
-                                className="font-semibold text-xl text-foreground overflow-hidden whitespace-nowrap"
-                            >
-                                Aligned
-                            </motion.span>
-                        )}
-                    </AnimatePresence>
+                <div className="flex items-center gap-2">
+                    <img
+                        src="/logo.png"
+                        alt="Aligned"
+                        className={`shrink-0 ${isCollapsed ? 'h-10 w-auto' : 'h-12 w-auto'}`}
+                    />
                 </div>
                 <button
                     onClick={() => setIsCollapsed(!isCollapsed)}

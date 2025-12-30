@@ -50,7 +50,7 @@ interface FocusTimerProviderProps {
 export function FocusTimerProvider({ children }: FocusTimerProviderProps) {
     const { user } = useAuth();
     const { startSession, completeSession, cancelSession } = useFocusSessions(user?.id);
-    const { logFocusSession } = useAnalytics(user?.id);
+    const { logFocusSession, logTaskComplete } = useAnalytics(user?.id);
 
     const [isRunning, setIsRunning] = useState(false);
     const [timeRemaining, setTimeRemaining] = useState(0);
@@ -181,9 +181,14 @@ export function FocusTimerProvider({ children }: FocusTimerProviderProps) {
             );
             const key = getUserStorageKey('aligned_focus_tasks', user?.id);
             localStorage.setItem(key, JSON.stringify(updated));
+
+            // Log task completion to analytics with total tasks count
+            const totalTasks = updated.length;
+            logTaskComplete(totalTasks);
+
             return updated;
         });
-    }, [user?.id]);
+    }, [user?.id, logTaskComplete]);
 
     const value: FocusTimerContextType = {
         isRunning,

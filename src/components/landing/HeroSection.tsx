@@ -1,10 +1,13 @@
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { AnimatedSection } from './AnimatedSection';
-import { ArrowRight, Play, Sparkles, Users, Shield, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Play, Sparkles, Users, Shield, CheckCircle2, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export function HeroSection() {
   const navigate = useNavigate();
+  const [showVideoModal, setShowVideoModal] = useState(false);
 
   const scrollToSection = (href: string) => {
     const element = document.querySelector(href);
@@ -13,13 +16,32 @@ export function HeroSection() {
     }
   };
 
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowVideoModal(false);
+      }
+    };
+
+    if (showVideoModal) {
+      document.addEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.body.style.overflow = 'unset';
+    };
+  }, [showVideoModal]);
+
   return (
     <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
       {/* Animated background */}
       <div className="absolute inset-0 bg-[var(--gradient-hero)]" />
       <div className="absolute top-20 right-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px] animate-pulse dark:bg-primary/15" />
       <div className="absolute bottom-20 left-1/4 w-[400px] h-[400px] bg-violet/20 rounded-full blur-[100px] animate-pulse dark:bg-primary/10" style={{ animationDelay: '1s' }} />
-      
+
       {/* Subtle grid pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,hsl(var(--border)/0.3)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--border)/0.3)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_70%)] dark:bg-[linear-gradient(to_right,hsl(var(--primary)/0.1)_1px,transparent_1px),linear-gradient(to_bottom,hsl(var(--primary)/0.1)_1px,transparent_1px)]" />
 
@@ -47,7 +69,7 @@ export function HeroSection() {
 
             <AnimatedSection delay={200}>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
-                No burnout. No streak pressure. Just one calm system that helps you plan, 
+                No burnout. No streak pressure. Just one calm system that helps you plan,
                 act, and reflect — all built around your identity and values.
               </p>
             </AnimatedSection>
@@ -65,7 +87,7 @@ export function HeroSection() {
                 <Button
                   size="lg"
                   variant="outline"
-                  onClick={() => scrollToSection('#how-it-works')}
+                  onClick={() => setShowVideoModal(true)}
                   className="glass-card border-border/50 hover:bg-card text-foreground font-medium px-8 py-6 text-base group dark:hover:border-primary/30"
                 >
                   <Play size={18} className="mr-2 group-hover:scale-110 transition-transform" />
@@ -93,7 +115,7 @@ export function HeroSection() {
             <div className="relative">
               {/* Glow behind phone */}
               <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-violet/20 rounded-[3rem] blur-3xl scale-90 dark:from-primary/30 dark:to-primary/10" />
-              
+
               {/* Phone mockup */}
               <div className="relative mx-auto w-72 sm:w-80 animate-float">
                 <div className="glass-strong rounded-[2.5rem] p-3 shadow-2xl shadow-primary/10 dark:shadow-primary/20">
@@ -171,6 +193,56 @@ export function HeroSection() {
           </AnimatedSection>
         </div>
       </div>
+      {/* Video Modal */}
+      <AnimatePresence>
+        {showVideoModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowVideoModal(false)}
+          >
+            {/* Backdrop */}
+            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+
+            {/* Modal Content */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', duration: 0.3 }}
+              className="relative w-full max-w-4xl z-10"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowVideoModal(false)}
+                className="absolute -top-12 right-0 p-2 text-white/80 hover:text-white transition-colors"
+              >
+                <X size={28} />
+              </button>
+
+              {/* Video Container */}
+              <div className="rounded-2xl overflow-hidden shadow-2xl bg-black">
+                <video
+                  autoPlay
+                  controls
+                  className="w-full aspect-video"
+                  src="/demo-video.mp4"
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+
+              {/* Caption */}
+              <p className="text-center text-white/60 text-sm mt-4">
+                Press Escape or click outside to close
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
