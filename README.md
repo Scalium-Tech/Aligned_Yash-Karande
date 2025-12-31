@@ -10,6 +10,8 @@
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 
+🌐 **Live Demo:** [aligned-yash-karande.vercel.app](https://aligned-yash-karande.vercel.app)
+
 </div>
 
 ---
@@ -24,48 +26,200 @@ Built for students, professionals, and creators who want to build meaningful liv
 
 ---
 
-## ✨ Key Features
+## ✨ Dashboard Features
 
-### 🧭 Identity-First Approach
-- Define your core identities and values
-- AI-generated insights based on your chosen identity
-- Track daily alignment with your goals
+### 🧭 Identity Setup
+- Define your core identities (e.g., "I am a disciplined learner")
+- AI-generated identity summary based on onboarding
+- Personal "My Why" statement
+- Visual identity cards with gradient styling
 
-### 📊 Smart Dashboard
-- Identity Score tracking
-- Daily streaks & weekly analytics
-- AI-powered personalized recommendations
+### 🎯 Yearly & Quarterly Goals
+- Set your yearly vision and break it into quarterly milestones
+- Progress tracking with visual indicators
+- "Your Why" detail for deeper motivation
+- Expandable goal cards with full details
 
-### ⏱️ Focus Sessions
-- Pomodoro-style timer with flexible durations
-- AI-generated focus tasks
-- Track focus minutes and completed sessions
+### � AI Weekly Plan
+- AI-generated personalized weekly schedule
+- Editable activities for each day
+- Activity icons (Morning Routine, Deep Work, Learning, etc.)
+- Custom plan modifications saved per user
 
-### 📓 Reflection Journal
-- Daily AI-generated prompts
-- Smart Insights with themes & suggestions
-- Ask AI for personalized guidance
-- Brain Dump for freeform thoughts
+### 😊 Mood & Energy Check-in
+- Daily mood tracking (Great, Good, Okay, Tired, Stressed)
+- Energy level slider (1-10)
+- Reflection notes for daily insights
+- Historical mood patterns
 
-### 🎯 Goals & Challenges
-- Quarterly goals with progress tracking
-- 21-day habit challenges
-- Celebration animations on completion
+### 📊 Identity Score & Weekly Progress
+- Real-time identity alignment score
+- Day streak counter with animations
+- Weekly progress bar chart (Recharts)
+- Tasks completed vs focus time metrics
 
-### 💪 Daily Habits & Health
-- Customizable daily non-negotiables
-- Health tracking (water, sleep, steps, nutrition)
-- AI-generated health suggestions
+---
 
-### 📝 Blog
-- Filterable articles by category
-- Auto-sliding testimonials carousel
+## 💪 Daily Habits Section
 
-### 🌙 Beautiful UI/UX
-- Dark/light mode with purple theme
-- Smooth Framer Motion animations
-- Glassmorphism design
-- Fully responsive
+### ✅ Daily Non-Negotiables
+- Customizable essential daily habits
+- Add/remove habits dynamically
+- Progress tracking with completion percentage
+- Trophy celebration on 100% completion
+
+### 🏥 Health Tracking
+- **Water Intake** - Track daily hydration with personalized tips
+- **Sleep Quality** - Log sleep hours and quality
+- **Activity/Steps** - Monitor daily movement
+- **Nutrition** - Track healthy eating habits
+- AI-generated personalized health suggestions
+- Interactive input with smart placeholders
+
+---
+
+## 🎯 Goals & Challenges
+
+### 🏆 21/30/90-Day Challenges
+- AI-generated personalized challenges based on onboarding
+- Custom challenge creation
+- Daily check-in system
+- Week-by-week activity breakdown
+- Progress visualization with milestones
+- Confetti celebration on completion 🎉
+
+### 📝 Challenge Features
+- Daily action items checklist
+- Weekly focus areas
+- Streak tracking
+- Challenge archive for completed challenges
+
+---
+
+## 📓 Reflection Journal
+
+### ✍️ Daily Reflections
+- AI-generated daily prompts
+- Mood selection (Happy, Neutral, Sad)
+- Save reflections with timestamps
+- Historical entry viewing
+
+### 🧠 Brain Dump
+- Freeform thought capture
+- AI-powered organization of thoughts
+- Convert chaos into actionable items
+- Save and review past brain dumps
+
+### 💬 Ask AI for Guidance
+- Conversational AI chat interface
+- Context-aware responses based on journal entries
+- Personalized advice and suggestions
+- Expandable/collapsible chat interface
+
+### 💡 Smart Insights
+- AI-generated themes from your reflections
+- Pattern recognition in your entries
+- Personalized suggestions based on your data
+
+---
+
+## 🧘 Weekly Coach Summary
+
+- AI-generated weekly performance summary
+- Wins and celebrations highlight
+- Areas for improvement
+- Personalized recommendations
+- Regenerate insights on demand
+
+---
+
+## ⚠️ Friction Alerts
+
+- AI-detected obstacles and challenges
+- Personalized solutions for each friction point
+- Pattern analysis from journal entries
+- Actionable recommendations
+
+---
+
+## ⏱️ Focus Sessions
+
+### 🎯 Pomodoro-Style Timer
+- Flexible durations: 15, 25, 45, 60, 90 minutes
+- Custom duration input
+- Visual countdown with progress ring
+- Pause/Resume/Reset controls
+
+### 📋 AI-Generated Focus Tasks
+- Tasks based on your identity and goals
+- Difficulty levels (Easy, Medium, Hard)
+- Time estimates per task
+- Custom task creation
+
+### 📈 Focus Stats
+- Total focus minutes tracked
+- Sessions completed counter
+- Current focus streak
+- Tasks completed today
+
+---
+
+## 📊 Analytics & Insights
+
+### 📈 Weekly Insights
+- AI-powered insights generation
+- Performance summaries
+- Trend analysis
+- Personalized recommendations
+
+### � Progress Charts
+- Weekly task completion chart
+- Focus time visualization
+- Identity score trends
+- Streak history
+
+---
+
+## 🔔 Notifications
+
+- Customizable reminder times
+- Daily check-in reminders
+- Focus session notifications
+- Challenge deadline alerts
+- Enable/disable per notification type
+
+---
+
+## ⚙️ Settings
+
+- **Theme Toggle** - Dark/Light mode
+- **Profile Management** - Update name, email
+- **Data Export** - Download your data
+- **Account Actions** - Logout, delete account
+- **Subscription Management** - Plan details
+
+---
+
+## 🌐 Landing Page Features
+
+- **Hero Section** with animated gradients
+- **How It Works** - 4-step visual guide
+- **Features Showcase** with icons and animations
+- **Testimonials Carousel** - Auto-sliding reviews
+- **Pricing Section** - Free, Pro (₹299/mo), Premium (₹799/mo)
+- **FAQ Section** - Expandable Q&A
+- **Blog** - Filterable articles by category
+- **Contact Us** - Form with Supabase integration
+
+---
+
+## 📄 Legal Pages
+
+- Privacy Policy
+- Terms & Conditions
+- Cookie Policy
+- Shipping Policy (Digital SaaS - No physical shipping)
+- Refund Policy (7-day money-back guarantee)
 
 ---
 
@@ -77,10 +231,15 @@ Built for students, professionals, and creators who want to build meaningful liv
 | **Styling** | Tailwind CSS, shadcn/ui |
 | **Animations** | Framer Motion |
 | **Build Tool** | Vite |
-| **AI** | Google Gemini API |
-| **Backend** | Supabase (Auth, Database) |
+| **AI** | Google Gemini API (gemini-2.0-flash) |
+| **Backend** | Supabase (Auth, Database, Edge Functions) |
 | **Charts** | Recharts |
 | **Icons** | Lucide React |
+| **Notifications** | Sonner Toast |
+| **Forms** | React Hook Form + Zod |
+| **State** | TanStack Query |
+| **Deployment** | Vercel |
+| **Payments** | Razorpay (Integration Ready) |
 
 ---
 
@@ -95,8 +254,8 @@ Built for students, professionals, and creators who want to build meaningful liv
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/aligned.git
-cd aligned
+git clone https://github.com/Scalium-Tech/Aligned_Yash-Karande.git
+cd aligned-your-personal-os-main
 
 # Install dependencies
 npm install
@@ -105,6 +264,7 @@ npm install
 # VITE_SUPABASE_URL=your_supabase_url
 # VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 # VITE_GOOGLE_API_KEY=your_google_ai_api_key
+# VITE_RAZORPAY_KEY_ID=your_razorpay_key_id
 
 # Start development server
 npm run dev
@@ -121,15 +281,41 @@ aligned/
 ├── public/                 # Static assets & logo
 ├── src/
 │   ├── components/
-│   │   ├── dashboard/      # Dashboard components
+│   │   ├── dashboard/      # 24 dashboard components
+│   │   │   ├── AIWeeklyPlan.tsx
+│   │   │   ├── DailyHabitsSection.tsx
+│   │   │   ├── FocusSessions.tsx
+│   │   │   ├── GoalsChallenges.tsx
+│   │   │   ├── ReflectionJournal.tsx
+│   │   │   ├── WeeklyCoachSummary.tsx
+│   │   │   ├── FrictionAlerts.tsx
+│   │   │   ├── IdentitySetup.tsx
+│   │   │   ├── IdentityScore.tsx
+│   │   │   ├── MoodEnergyCheckin.tsx
+│   │   │   ├── WeeklyProgress.tsx
+│   │   │   ├── WeeklyInsights.tsx
+│   │   │   ├── NotificationsSection.tsx
+│   │   │   ├── SettingsSection.tsx
+│   │   │   └── ... (10 more)
 │   │   ├── landing/        # Landing page components
+│   │   │   ├── HeroSection.tsx
+│   │   │   ├── FeaturesSection.tsx
+│   │   │   ├── PricingSection.tsx
+│   │   │   ├── TestimonialsSection.tsx
+│   │   │   └── ...
 │   │   └── ui/             # shadcn/ui components
-│   ├── contexts/           # React contexts
-│   ├── hooks/              # Custom hooks
-│   ├── data/               # Static data (blog posts)
-│   ├── pages/              # Page components
-│   └── App.tsx             # Main app component
+│   ├── contexts/           # AuthContext, FocusTimerContext
+│   ├── hooks/              # useAIInsights, useJournal, useGoals, etc.
+│   ├── lib/                # Supabase client, utilities
+│   ├── data/               # Blog posts data
+│   ├── pages/              # 16 page components
+│   │   ├── Dashboard.tsx
+│   │   ├── Login.tsx / Signup.tsx
+│   │   ├── onboarding/     # 7-step onboarding flow
+│   │   └── ...
+│   └── App.tsx             # Main app with routing
 ├── supabase/
+│   ├── functions/          # Edge functions
 │   └── migrations/         # Database migrations
 └── package.json
 ```
@@ -143,6 +329,25 @@ aligned/
 | `VITE_SUPABASE_URL` | Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key |
 | `VITE_GOOGLE_API_KEY` | Google AI (Gemini) API key |
+| `VITE_RAZORPAY_KEY_ID` | Razorpay Key ID (for payments) |
+
+---
+
+## 📱 Responsive Design
+
+- **Desktop** - Full dashboard layout with sidebar
+- **Tablet** - Collapsible sidebar, adjusted grid
+- **Mobile** - Bottom navigation, stacked cards
+
+---
+
+## 🎨 Design System
+
+- **Primary Color**: Purple (#7C3AED)
+- **Theme**: Glassmorphism with subtle shadows
+- **Typography**: Modern sans-serif (Inter, system fonts)
+- **Animations**: Framer Motion for smooth transitions
+- **Icons**: Lucide React icon library
 
 ---
 
@@ -161,7 +366,7 @@ aligned/
 
 ---
 
-## � License
+## 📄 License
 
 This project is licensed under the MIT License.
 
@@ -172,5 +377,7 @@ This project is licensed under the MIT License.
 **Built with 💜 for intentional living**
 
 *Stay aligned. Stay consistent. Become who you want to be.*
+
+⭐ **Star this repo if you find it helpful!** ⭐
 
 </div>
