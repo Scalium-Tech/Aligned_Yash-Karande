@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Play, Pause, RotateCcw, CheckCircle2, Clock, Flame,
-    Target, Sparkles, Loader2, Trophy, ListChecks, Plus, X
+    Target, Sparkles, Loader2, Trophy, ListChecks, Plus, X, Pencil
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 'recharts';
@@ -46,6 +46,10 @@ export function FocusSessions({ userIdentities }: FocusSessionsProps) {
     const [showAddTask, setShowAddTask] = useState(false);
     const [newTaskTitle, setNewTaskTitle] = useState('');
     const [newTaskDuration, setNewTaskDuration] = useState(30);
+
+    // Edit task state
+    const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+    const [editingTaskDuration, setEditingTaskDuration] = useState(30);
 
     const todayStats = getTodayStats();
     const weeklyData = getWeeklyData();
@@ -238,6 +242,33 @@ Return only JSON, no other text.`;
         setShowAddTask(false);
     };
 
+    // Start editing a task
+    const handleStartEdit = (task: typeof focusTasks[0]) => {
+        setEditingTaskId(task.id);
+        setEditingTaskDuration(task.duration);
+    };
+
+    // Save edited task duration
+    const handleSaveEdit = () => {
+        if (!editingTaskId) return;
+
+        const updatedTasks = focusTasks.map(task =>
+            task.id === editingTaskId
+                ? { ...task, duration: editingTaskDuration }
+                : task
+        );
+        setFocusTasks(updatedTasks);
+        const key = getUserStorageKey('aligned_focus_tasks', user?.id);
+        localStorage.setItem(key, JSON.stringify(updatedTasks));
+
+        setEditingTaskId(null);
+    };
+
+    // Cancel editing
+    const handleCancelEdit = () => {
+        setEditingTaskId(null);
+    };
+
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -354,6 +385,80 @@ Return only JSON, no other text.`;
                     )}
                 </AnimatePresence>
 
+                {/* Edit Task Modal */}
+                <AnimatePresence>
+                    {editingTaskId && (
+                        <>
+                            {/* Backdrop */}
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998]"
+                                onClick={handleCancelEdit}
+                            />
+                            {/* Modal */}
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[90%] max-w-sm"
+                            >
+                                <div className="bg-card border border-border/50 rounded-2xl shadow-2xl p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="font-semibold text-foreground flex items-center gap-2">
+                                            <Pencil className="w-4 h-4 text-primary" />
+                                            Edit Task Duration
+                                        </h4>
+                                        <button onClick={handleCancelEdit} className="text-muted-foreground hover:text-foreground">
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+
+                                    <p className="text-sm text-muted-foreground mb-4">
+                                        {focusTasks.find(t => t.id === editingTaskId)?.title}
+                                    </p>
+
+                                    <div className="mb-4">
+                                        <label className="text-xs text-muted-foreground mb-2 block">Duration (minutes)</label>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="number"
+                                                placeholder="Enter minutes"
+                                                min="1"
+                                                max="180"
+                                                value={editingTaskDuration || ''}
+                                                onChange={(e) => setEditingTaskDuration(e.target.value === '' ? 0 : Number(e.target.value))}
+                                                className="w-full px-3 py-2 rounded-lg bg-background border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                                                autoFocus
+                                            />
+                                            <span className="text-sm text-muted-foreground whitespace-nowrap">min</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex gap-2">
+                                        <Button
+                                            onClick={handleCancelEdit}
+                                            variant="outline"
+                                            className="flex-1"
+                                        >
+                                            Cancel
+                                        </Button>
+                                        <Button
+                                            onClick={handleSaveEdit}
+                                            disabled={!editingTaskDuration || editingTaskDuration < 1}
+                                            className="flex-1 bg-gradient-to-r from-primary to-violet"
+                                        >
+                                            <CheckCircle2 className="w-4 h-4 mr-2" />
+                                            OK
+                                        </Button>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
+
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {focusTasks.map((task) => (
@@ -373,10 +478,22 @@ Return only JSON, no other text.`;
                                     <p className={`text-sm font-medium ${task.completed ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
                                         {task.title}
                                     </p>
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                                        <Clock className="w-3 h-3" />
-                                        {task.duration} min
-                                    </p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                            <Clock className="w-3 h-3" />
+                                            {task.duration} min
+                                        </p>
+                                        {!task.completed && currentTask?.id !== task.id && !isRunning && (
+                                            <button
+                                                onClick={() => handleStartEdit(task)}
+                                                className="text-xs text-primary hover:text-primary/80 flex items-center gap-0.5 transition-colors"
+                                                title="Edit duration"
+                                            >
+                                                <Pencil className="w-3 h-3" />
+                                                Edit
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                                 {task.completed ? (
                                     <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
