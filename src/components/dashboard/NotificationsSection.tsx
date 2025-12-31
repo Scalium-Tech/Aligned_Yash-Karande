@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNotifications, NotificationType, ScheduledNotification } from '@/hooks/useNotifications';
+import { useNotificationAlert } from '@/components/NotificationScheduler';
 import { toast } from 'sonner';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -37,6 +38,15 @@ export function NotificationsSection() {
         sendTestNotification,
     } = useNotifications();
 
+    // Get the in-app alert function
+    let showAlert: ((title: string, body: string) => void) | null = null;
+    try {
+        const alertContext = useNotificationAlert();
+        showAlert = alertContext.showAlert;
+    } catch {
+        // NotificationAlert context not available, will use browser notification only
+    }
+
     const [showAdd, setShowAdd] = useState(false);
     const [newTitle, setNewTitle] = useState('');
     const [newBody, setNewBody] = useState('');
@@ -49,7 +59,12 @@ export function NotificationsSection() {
     const handleRequestPermission = async () => {
         const result = await requestPermission();
         if (result === 'granted') {
-            sendTestNotification();
+            // Show in-app modal instead of just browser notification
+            if (showAlert) {
+                showAlert('🔔 Notifications Enabled!', 'You will now receive reminders based on your schedule.');
+            } else {
+                sendTestNotification();
+            }
             toast.success('Notifications enabled!', {
                 description: 'You will now receive reminders based on your schedule.',
             });
@@ -61,11 +76,14 @@ export function NotificationsSection() {
     };
 
     const handleTestNotification = () => {
+        // Show in-app modal first
+        if (showAlert) {
+            showAlert('🔔 Test Notification', 'Your notifications are working! You will receive reminders based on your schedule.');
+        }
+        // Also send browser notification as fallback
         sendTestNotification();
-        toast.success('🔔 Test notification sent!', {
-            description: 'Check your browser notifications. If you don\'t see it, make sure your browser allows notifications for this site.',
-        });
     };
+
 
     const handleAddNotification = () => {
         if (!newTitle.trim()) return;
@@ -241,8 +259,8 @@ export function NotificationsSection() {
                                             type="button"
                                             onClick={() => setNewAmPm('AM')}
                                             className={`px-3 py-1.5 text-sm font-medium transition-colors ${newAmPm === 'AM'
-                                                    ? 'bg-primary text-primary-foreground'
-                                                    : 'bg-background text-muted-foreground hover:text-foreground'
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'bg-background text-muted-foreground hover:text-foreground'
                                                 }`}
                                         >
                                             AM
@@ -251,8 +269,8 @@ export function NotificationsSection() {
                                             type="button"
                                             onClick={() => setNewAmPm('PM')}
                                             className={`px-3 py-1.5 text-sm font-medium transition-colors ${newAmPm === 'PM'
-                                                    ? 'bg-primary text-primary-foreground'
-                                                    : 'bg-background text-muted-foreground hover:text-foreground'
+                                                ? 'bg-primary text-primary-foreground'
+                                                : 'bg-background text-muted-foreground hover:text-foreground'
                                                 }`}
                                         >
                                             PM
