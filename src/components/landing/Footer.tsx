@@ -19,6 +19,8 @@ const footerLinks = {
     { label: 'Privacy Policy', href: '/privacy' },
     { label: 'Terms & Conditions', href: '/terms' },
     { label: 'Cookie Policy', href: '/cookies' },
+    { label: 'Shipping Policy', href: '/shipping' },
+    { label: 'Refund Policy', href: '/refunds' },
   ],
   connect: [
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/yash-karande-b3544a2a1/' },

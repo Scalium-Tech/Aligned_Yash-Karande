@@ -16,6 +16,8 @@ import ContactUs from "./pages/ContactUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsConditions from "./pages/TermsConditions";
 import CookiePolicy from "./pages/CookiePolicy";
+import ShippingPolicy from "./pages/ShippingPolicy";
+import RefundPolicy from "./pages/RefundPolicy";
 import NotFound from "./pages/NotFound";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
@@ -51,6 +53,8 @@ const App = () => (
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<TermsConditions />} />
                 <Route path="/cookies" element={<CookiePolicy />} />
+                <Route path="/shipping" element={<ShippingPolicy />} />
+                <Route path="/refunds" element={<RefundPolicy />} />
                 <Route path="/feedback" element={<Feedback />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/login" element={<Login />} />
