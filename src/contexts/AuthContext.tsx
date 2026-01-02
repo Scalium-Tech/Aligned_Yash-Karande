@@ -7,6 +7,10 @@ interface Profile {
   id: string;
   full_name: string;
   onboarding_completed: boolean;
+  is_pro?: boolean;
+  plan_type?: string;
+  razorpay_payment_id?: string;
+  payment_date?: string;
 }
 
 interface AuthContextType {
@@ -14,7 +18,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, fullName: string, paymentInfo?: { paymentId: string; planType: string }) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null; onboardingCompleted?: boolean }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -83,7 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, paymentInfo?: { paymentId: string; planType: string }) => {
     // Clear any existing dashboard data to ensure new users start fresh
     clearDashboardData();
 
@@ -103,13 +107,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Insert profile after successful signup
     if (data.user) {
+      const profileData: {
+        id: string;
+        full_name: string;
+        onboarding_completed: boolean;
+        is_pro?: boolean;
+        plan_type?: string;
+        razorpay_payment_id?: string;
+        payment_date?: string;
+      } = {
+        id: data.user.id,
+        full_name: fullName,
+        onboarding_completed: false
+      };
+
+      // Add payment info if provided
+      if (paymentInfo) {
+        profileData.is_pro = true;
+        profileData.plan_type = paymentInfo.planType;
+        profileData.razorpay_payment_id = paymentInfo.paymentId;
+        profileData.payment_date = new Date().toISOString();
+      }
+
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: data.user.id,
-          full_name: fullName,
-          onboarding_completed: false
-        });
+        .insert(profileData);
 
       if (profileError) {
         return { error: profileError };

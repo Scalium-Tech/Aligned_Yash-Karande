@@ -21,6 +21,7 @@ import { WeeklyInsights } from '@/components/dashboard/WeeklyInsights';
 import { DailyHabitsSection } from '@/components/dashboard/DailyHabitsSection';
 import { useAIInsights } from '@/hooks/useAIInsights';
 import { getUserStorageKey } from '@/lib/userStorage';
+import { ProFeatureGate } from '@/components/ProFeatureGate';
 
 // Section components
 function GoalsSection() {
@@ -34,8 +35,12 @@ function JournalSection() {
         <ReflectionJournal />
       </div>
       <div className="space-y-6">
-        <WeeklyCoachSummary />
-        <FrictionAlerts />
+        <ProFeatureGate featureName="Weekly Coach Summary">
+          <WeeklyCoachSummary />
+        </ProFeatureGate>
+        <ProFeatureGate featureName="Smart Insights">
+          <FrictionAlerts />
+        </ProFeatureGate>
       </div>
     </div>
   );
@@ -114,8 +119,10 @@ export default function Dashboard() {
   }, [user, profile, loading, navigate]);
 
   const handleLogout = async () => {
+    const isPro = profile?.is_pro;
     await signOut();
-    navigate('/login');
+    // Redirect free users to pricing, pro users to login
+    navigate(isPro ? '/login' : '/#pricing');
   };
 
   if (loading) {
@@ -135,15 +142,31 @@ export default function Dashboard() {
   const renderSection = () => {
     switch (activeSection) {
       case 'habits':
-        return <DailyHabitsSection />;
+        return (
+          <ProFeatureGate featureName="Daily Habits">
+            <DailyHabitsSection />
+          </ProFeatureGate>
+        );
       case 'goals':
-        return <GoalsSection />;
+        return (
+          <ProFeatureGate featureName="Goals & Challenges">
+            <GoalsSection />
+          </ProFeatureGate>
+        );
       case 'journal':
         return <JournalSection />;
       case 'analytics':
-        return <AnalyticsSection />;
+        return (
+          <ProFeatureGate featureName="Analytics">
+            <AnalyticsSection />
+          </ProFeatureGate>
+        );
       case 'focus':
-        return <FocusSessions userIdentities={insights?.identities} />;
+        return (
+          <ProFeatureGate featureName="Focus Sessions">
+            <FocusSessions userIdentities={insights?.identities} />
+          </ProFeatureGate>
+        );
       case 'notifications':
         return <NotificationsSection />;
       case 'settings':
@@ -215,27 +238,35 @@ export default function Dashboard() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
-          {/* Row 1 */}
+          {/* Row 1 - Identity Setup is FREE */}
           <IdentitySetup
             identities={insights.identities}
             myWhy={insights.my_why}
             identitySummary={insights.identity_summary}
             onGetStarted={() => setActiveSection('goals')}
           />
-          <YearlyQuarterlyGoal
-            yearlyGoalTitle={insights.yearly_goal_title}
-            quarterlyGoals={insights.quarterly_goals}
-            yourWhyDetail={insights.your_why_detail}
-          />
-          <AIWeeklyPlan
-            weeklyPlan={customWeeklyPlan || insights.weekly_plan}
-            onPlanUpdate={handleWeeklyPlanUpdate}
-          />
+          {/* Pro-only sections */}
+          <ProFeatureGate featureName="Yearly & Quarterly Goals">
+            <YearlyQuarterlyGoal
+              yearlyGoalTitle={insights.yearly_goal_title}
+              quarterlyGoals={insights.quarterly_goals}
+              yourWhyDetail={insights.your_why_detail}
+            />
+          </ProFeatureGate>
+          <ProFeatureGate featureName="AI Weekly Plan">
+            <AIWeeklyPlan
+              weeklyPlan={customWeeklyPlan || insights.weekly_plan}
+              onPlanUpdate={handleWeeklyPlanUpdate}
+            />
+          </ProFeatureGate>
 
-          {/* Row 2: Daily Focus & Alignment */}
+          {/* Row 2: Daily Check-in and Identity Score are FREE */}
           <MoodEnergyCheckin />
           <IdentityScore />
-          <WeeklyProgress />
+          {/* Weekly Progress is Pro */}
+          <ProFeatureGate featureName="Weekly Progress">
+            <WeeklyProgress />
+          </ProFeatureGate>
         </div>
       </>
     );

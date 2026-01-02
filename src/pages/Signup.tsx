@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
+import { getPendingPayment, clearPendingPayment } from '@/lib/razorpay';
+import { Crown } from 'lucide-react';
 
 const signupSchema = z.object({
   fullName: z.string().trim().min(1, 'Full name is required').max(100, 'Name must be less than 100 characters'),
@@ -18,9 +20,21 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingPayment, setPendingPayment] = useState<{ paymentId: string; planType: string } | null>(null);
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check for pending payment on mount
+  useEffect(() => {
+    const payment = getPendingPayment();
+    if (payment) {
+      setPendingPayment({
+        paymentId: payment.paymentId,
+        planType: payment.planType
+      });
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +52,13 @@ export default function Signup() {
       return;
     }
 
-    const { error } = await signUp(email, password, fullName);
+    // Pass payment info if exists
+    const { error } = await signUp(
+      email,
+      password,
+      fullName,
+      pendingPayment || undefined
+    );
 
     if (error) {
       toast({
@@ -50,9 +70,16 @@ export default function Signup() {
       return;
     }
 
+    // Clear pending payment after successful signup
+    if (pendingPayment) {
+      clearPendingPayment();
+    }
+
     toast({
       title: 'Account Created',
-      description: 'Welcome! Let\'s complete your onboarding.'
+      description: pendingPayment
+        ? 'Welcome to Pro! Let\'s complete your onboarding.'
+        : 'Welcome! Let\'s complete your onboarding.'
     });
 
     navigate('/onboarding/step-1');
@@ -71,7 +98,14 @@ export default function Signup() {
               />
             </Link>
             <h1 className="text-2xl font-bold text-foreground mb-2">Create Account</h1>
-            <p className="text-muted-foreground">Get started with your free account</p>
+            {pendingPayment ? (
+              <div className="flex items-center justify-center gap-2 text-primary">
+                <Crown size={18} />
+                <span className="font-medium">Pro {pendingPayment.planType} plan activated!</span>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">Get started with your free account</p>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
     User, Palette, Bell, Shield, Database, Trash2,
     Download, Moon, Sun, Monitor, Save, RefreshCw,
-    LogOut, AlertTriangle, CheckCircle2
+    LogOut, AlertTriangle, CheckCircle2, Crown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
@@ -135,6 +135,58 @@ export function SettingsSection() {
                             </p>
                         </div>
                     </div>
+                </div>
+            </motion.div>
+
+            {/* Subscription Section */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+                className="rounded-2xl bg-card border border-border/50 p-6 shadow-sm"
+            >
+                <div className="flex items-center gap-3 mb-4">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${profile?.is_pro ? 'bg-gradient-to-br from-primary to-purple-dark' : 'bg-muted'}`}>
+                        <Crown className={`w-5 h-5 ${profile?.is_pro ? 'text-white' : 'text-muted-foreground'}`} />
+                    </div>
+                    <div>
+                        <h3 className="font-semibold text-foreground">Subscription</h3>
+                        <p className="text-sm text-muted-foreground">Your current plan</p>
+                    </div>
+                </div>
+
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
+                        <div>
+                            <p className="text-sm text-muted-foreground">Plan</p>
+                            <p className="font-medium text-foreground flex items-center gap-2">
+                                {profile?.is_pro ? (
+                                    <>
+                                        <span className="bg-gradient-to-r from-primary to-purple-dark bg-clip-text text-transparent font-bold">Pro</span>
+                                        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary capitalize">
+                                            {profile.plan_type || 'monthly'}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span>Free</span>
+                                )}
+                            </p>
+                        </div>
+                    </div>
+                    {profile?.is_pro && profile?.payment_date && (
+                        <div className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Payment Date</p>
+                                <p className="font-medium text-foreground">
+                                    {new Date(profile.payment_date).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    })}
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </motion.div>
 

@@ -4,6 +4,7 @@ import { BookOpen, Sparkles, Send, Smile, Meh, Frown, Loader2, ChevronDown, Chev
 import { Button } from '@/components/ui/button';
 import { useJournal } from '@/hooks/useJournal';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProFeatureGate } from '@/components/ProFeatureGate';
 
 export function ReflectionJournal() {
     const { user } = useAuth();
@@ -311,323 +312,329 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
                 </div>
             </motion.div>
 
-            {/* Brain Dump Section */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
-                className="rounded-2xl bg-card border border-border/50 p-6 shadow-sm"
-            >
-                <div
-                    className="flex items-center justify-between cursor-pointer"
-                    onClick={() => setShowBrainDump(!showBrainDump)}
+            {/* Brain Dump Section - Pro Only */}
+            <ProFeatureGate featureName="Brain Dump">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
+                    className="rounded-2xl bg-card border border-border/50 p-6 shadow-sm"
                 >
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet/20 to-purple-500/20 flex items-center justify-center">
-                            <Brain className="w-5 h-5 text-violet" />
+                    <div
+                        className="flex items-center justify-between cursor-pointer"
+                        onClick={() => setShowBrainDump(!showBrainDump)}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet/20 to-purple-500/20 flex items-center justify-center">
+                                <Brain className="w-5 h-5 text-violet" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-foreground">Brain Dump</h3>
+                                <p className="text-xs text-muted-foreground">Quick capture for your thoughts</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="font-semibold text-foreground">Brain Dump</h3>
-                            <p className="text-xs text-muted-foreground">Quick capture for your thoughts</p>
-                        </div>
+                        <Button variant="ghost" size="sm">
+                            {showBrainDump ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </Button>
                     </div>
-                    <Button variant="ghost" size="sm">
-                        {showBrainDump ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </Button>
-                </div>
 
-                <AnimatePresence>
-                    {showBrainDump && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="mt-4"
-                        >
-                            {/* Brain Dump Textarea */}
-                            <textarea
-                                value={brainDumpContent}
-                                onChange={(e) => {
-                                    setBrainDumpContent(e.target.value);
-                                    setIsBrainDumpSaved(false);
-                                }}
-                                placeholder="Dump your thoughts here... Tasks, ideas, worries, anything on your mind. No structure needed."
-                                className="w-full h-32 px-4 py-3 rounded-xl bg-gradient-to-br from-violet/5 to-purple-500/5 border border-violet/20 focus:border-violet/50 focus:ring-2 focus:ring-violet/20 outline-none resize-none text-foreground placeholder:text-muted-foreground"
-                            />
+                    <AnimatePresence>
+                        {showBrainDump && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="mt-4"
+                            >
+                                {/* Brain Dump Textarea */}
+                                <textarea
+                                    value={brainDumpContent}
+                                    onChange={(e) => {
+                                        setBrainDumpContent(e.target.value);
+                                        setIsBrainDumpSaved(false);
+                                    }}
+                                    placeholder="Dump your thoughts here... Tasks, ideas, worries, anything on your mind. No structure needed."
+                                    className="w-full h-32 px-4 py-3 rounded-xl bg-gradient-to-br from-violet/5 to-purple-500/5 border border-violet/20 focus:border-violet/50 focus:ring-2 focus:ring-violet/20 outline-none resize-none text-foreground placeholder:text-muted-foreground"
+                                />
 
-                            {/* Actions */}
-                            <div className="mt-3 flex items-center justify-between">
-                                <span className="text-xs text-muted-foreground">
-                                    {brainDumpContent.length} characters
-                                </span>
-                                <div className="flex gap-2">
-                                    {isBrainDumpSaved && (
-                                        <Button
-                                            onClick={handleOrganizeBrainDump}
-                                            disabled={isOrganizing}
-                                            variant="outline"
-                                            size="sm"
-                                            className="border-violet/30 hover:bg-violet/10"
+                                {/* Actions */}
+                                <div className="mt-3 flex items-center justify-between">
+                                    <span className="text-xs text-muted-foreground">
+                                        {brainDumpContent.length} characters
+                                    </span>
+                                    <div className="flex gap-2">
+                                        {isBrainDumpSaved && (
+                                            <Button
+                                                onClick={handleOrganizeBrainDump}
+                                                disabled={isOrganizing}
+                                                variant="outline"
+                                                size="sm"
+                                                className="border-violet/30 hover:bg-violet/10"
+                                            >
+                                                {isOrganizing ? (
+                                                    <>
+                                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                                        Organizing...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Sparkles className="w-4 h-4 mr-2 text-violet" />
+                                                        Organize with AI
+                                                    </>
+                                                )}
+                                            </Button>
+                                        )}
+                                        {isBrainDumpSaved ? (
+                                            <Button
+                                                onClick={handleNewBrainDump}
+                                                variant="outline"
+                                                size="sm"
+                                            >
+                                                <Brain className="w-4 h-4 mr-2" />
+                                                New Dump
+                                            </Button>
+                                        ) : (
+                                            <Button
+                                                onClick={handleSaveBrainDump}
+                                                disabled={!brainDumpContent.trim()}
+                                                size="sm"
+                                                className="bg-gradient-to-r from-violet to-purple-500 hover:opacity-90"
+                                            >
+                                                <Save className="w-4 h-4 mr-2" />
+                                                Save Dump
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Organized Content */}
+                                {organizedContent && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="mt-4 rounded-xl bg-gradient-to-br from-violet/10 to-purple-500/10 border border-violet/20 p-4"
+                                    >
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <Sparkles className="w-4 h-4 text-violet" />
+                                            <span className="text-sm font-medium text-violet">Organized by AI</span>
+                                        </div>
+                                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                                            {organizedContent}
+                                        </div>
+                                    </motion.div>
+                                )}
+
+                                {/* Brain Dump History Toggle */}
+                                {brainDumps.length > 0 && (
+                                    <div className="mt-4 pt-4 border-t border-border/30">
+                                        <button
+                                            onClick={() => setShowBrainDumpHistory(!showBrainDumpHistory)}
+                                            className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
                                         >
-                                            {isOrganizing ? (
+                                            {showBrainDumpHistory ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                            {showBrainDumpHistory ? 'Hide' : 'Show'} Brain Dump History ({brainDumps.length})
+                                        </button>
+
+                                        <AnimatePresence>
+                                            {showBrainDumpHistory && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    className="mt-3 space-y-2"
+                                                >
+                                                    {brainDumps.map((dump) => (
+                                                        <div
+                                                            key={dump.id}
+                                                            className="p-3 rounded-lg bg-secondary/30 border border-border/30"
+                                                        >
+                                                            <div className="flex items-center justify-between mb-1">
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    {new Date(dump.timestamp).toLocaleString('en-US', {
+                                                                        month: 'short',
+                                                                        day: 'numeric',
+                                                                        hour: 'numeric',
+                                                                        minute: '2-digit'
+                                                                    })}
+                                                                </span>
+                                                                {dump.organizedContent && (
+                                                                    <span className="text-xs text-violet flex items-center gap-1">
+                                                                        <Sparkles className="w-3 h-3" /> Organized
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-sm text-foreground line-clamp-2">{dump.content}</p>
+                                                        </div>
+                                                    ))}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                )}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+            </ProFeatureGate>
+
+            {/* AI Chat Section - Pro Only */}
+            <ProFeatureGate featureName="AI Guidance">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="rounded-2xl bg-card border border-border/50 p-6 shadow-sm"
+                >
+                    <div
+                        className="flex items-center justify-between cursor-pointer"
+                        onClick={() => setShowAIChat(!showAIChat)}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-violet/20 flex items-center justify-center">
+                                <MessageCircle className="w-5 h-5 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-foreground">Ask AI for Guidance</h3>
+                                <p className="text-xs text-muted-foreground">Get personalized advice, plans, or answers</p>
+                            </div>
+                        </div>
+                        <Button variant="ghost" size="sm">
+                            {showAIChat ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        </Button>
+                    </div>
+
+                    <AnimatePresence>
+                        {showAIChat && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="mt-4"
+                            >
+                                {/* Query Input */}
+                                <div className="space-y-3">
+                                    <textarea
+                                        value={aiQuery}
+                                        onChange={(e) => setAiQuery(e.target.value)}
+                                        placeholder="Ask anything... e.g., 'Create a morning routine plan' or 'How can I be more productive?'"
+                                        className="w-full h-24 px-4 py-3 rounded-xl bg-secondary/30 border border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none resize-none text-foreground placeholder:text-muted-foreground"
+                                        onKeyPress={(e) => e.key === 'Enter' && e.ctrlKey && handleAskAI()}
+                                    />
+
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs text-muted-foreground">Ctrl + Enter to send</span>
+                                        <Button
+                                            onClick={handleAskAI}
+                                            disabled={!aiQuery.trim() || isAskingAI}
+                                            className="bg-gradient-to-r from-primary to-violet hover:opacity-90"
+                                        >
+                                            {isAskingAI ? (
                                                 <>
                                                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                    Organizing...
+                                                    Thinking...
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Sparkles className="w-4 h-4 mr-2 text-violet" />
-                                                    Organize with AI
+                                                    <Wand2 className="w-4 h-4 mr-2" />
+                                                    Ask AI
                                                 </>
                                             )}
                                         </Button>
-                                    )}
-                                    {isBrainDumpSaved ? (
-                                        <Button
-                                            onClick={handleNewBrainDump}
-                                            variant="outline"
-                                            size="sm"
-                                        >
-                                            <Brain className="w-4 h-4 mr-2" />
-                                            New Dump
-                                        </Button>
-                                    ) : (
-                                        <Button
-                                            onClick={handleSaveBrainDump}
-                                            disabled={!brainDumpContent.trim()}
-                                            size="sm"
-                                            className="bg-gradient-to-r from-violet to-purple-500 hover:opacity-90"
-                                        >
-                                            <Save className="w-4 h-4 mr-2" />
-                                            Save Dump
-                                        </Button>
-                                    )}
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Organized Content */}
-                            {organizedContent && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="mt-4 rounded-xl bg-gradient-to-br from-violet/10 to-purple-500/10 border border-violet/20 p-4"
-                                >
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Sparkles className="w-4 h-4 text-violet" />
-                                        <span className="text-sm font-medium text-violet">Organized by AI</span>
-                                    </div>
-                                    <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                                        {organizedContent}
-                                    </div>
-                                </motion.div>
-                            )}
-
-                            {/* Brain Dump History Toggle */}
-                            {brainDumps.length > 0 && (
-                                <div className="mt-4 pt-4 border-t border-border/30">
-                                    <button
-                                        onClick={() => setShowBrainDumpHistory(!showBrainDumpHistory)}
-                                        className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                                {/* AI Response */}
+                                {aiResponse && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="mt-4 rounded-xl bg-gradient-to-br from-primary/10 to-violet/10 border border-primary/20 p-4"
                                     >
-                                        {showBrainDumpHistory ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                                        {showBrainDumpHistory ? 'Hide' : 'Show'} Brain Dump History ({brainDumps.length})
-                                    </button>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <Sparkles className="w-4 h-4 text-primary" />
+                                            <span className="text-sm font-medium text-primary">AI Response</span>
+                                        </div>
+                                        <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                                            {aiResponse}
+                                        </div>
+                                    </motion.div>
+                                )}
 
-                                    <AnimatePresence>
-                                        {showBrainDumpHistory && (
-                                            <motion.div
-                                                initial={{ opacity: 0, height: 0 }}
-                                                animate={{ opacity: 1, height: 'auto' }}
-                                                exit={{ opacity: 0, height: 0 }}
-                                                className="mt-3 space-y-2"
-                                            >
-                                                {brainDumps.map((dump) => (
-                                                    <div
-                                                        key={dump.id}
-                                                        className="p-3 rounded-lg bg-secondary/30 border border-border/30"
-                                                    >
-                                                        <div className="flex items-center justify-between mb-1">
-                                                            <span className="text-xs text-muted-foreground">
-                                                                {new Date(dump.timestamp).toLocaleString('en-US', {
-                                                                    month: 'short',
-                                                                    day: 'numeric',
-                                                                    hour: 'numeric',
-                                                                    minute: '2-digit'
-                                                                })}
-                                                            </span>
-                                                            {dump.organizedContent && (
-                                                                <span className="text-xs text-violet flex items-center gap-1">
-                                                                    <Sparkles className="w-3 h-3" /> Organized
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <p className="text-sm text-foreground line-clamp-2">{dump.content}</p>
-                                                    </div>
-                                                ))}
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
+                                {/* Quick Suggestions */}
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                    <span className="text-xs text-muted-foreground mr-2">Quick asks:</span>
+                                    {['Create a morning routine', 'How to stay focused?', 'Plan my week', 'Motivate me'].map((suggestion) => (
+                                        <button
+                                            key={suggestion}
+                                            onClick={() => setAiQuery(suggestion)}
+                                            className="text-xs px-3 py-1.5 rounded-full bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                                        >
+                                            {suggestion}
+                                        </button>
+                                    ))}
                                 </div>
-                            )}
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </motion.div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </motion.div>
+            </ProFeatureGate>
 
-            {/* AI Chat Section */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="rounded-2xl bg-card border border-border/50 p-6 shadow-sm"
-            >
-                <div
-                    className="flex items-center justify-between cursor-pointer"
-                    onClick={() => setShowAIChat(!showAIChat)}
+            {/* History Toggle - Pro Only */}
+            <ProFeatureGate featureName="Reflection History">
+                <button
+                    onClick={() => setShowHistory(!showHistory)}
+                    className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-violet/20 flex items-center justify-center">
-                            <MessageCircle className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-foreground">Ask AI for Guidance</h3>
-                            <p className="text-xs text-muted-foreground">Get personalized advice, plans, or answers</p>
-                        </div>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                        {showAIChat ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </Button>
-                </div>
+                    {showHistory ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    {showHistory ? 'Hide' : 'Show'} Recent Entries ({recentEntries.length})
+                </button>
 
+                {/* Recent Entries */}
                 <AnimatePresence>
-                    {showAIChat && (
+                    {showHistory && (
                         <motion.div
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: 'auto' }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="mt-4"
+                            className="space-y-4"
                         >
-                            {/* Query Input */}
-                            <div className="space-y-3">
-                                <textarea
-                                    value={aiQuery}
-                                    onChange={(e) => setAiQuery(e.target.value)}
-                                    placeholder="Ask anything... e.g., 'Create a morning routine plan' or 'How can I be more productive?'"
-                                    className="w-full h-24 px-4 py-3 rounded-xl bg-secondary/30 border border-border/50 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 outline-none resize-none text-foreground placeholder:text-muted-foreground"
-                                    onKeyPress={(e) => e.key === 'Enter' && e.ctrlKey && handleAskAI()}
-                                />
-
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs text-muted-foreground">Ctrl + Enter to send</span>
-                                    <Button
-                                        onClick={handleAskAI}
-                                        disabled={!aiQuery.trim() || isAskingAI}
-                                        className="bg-gradient-to-r from-primary to-violet hover:opacity-90"
+                            {recentEntries.length === 0 ? (
+                                <p className="text-center text-muted-foreground py-8">No entries yet. Start journaling today!</p>
+                            ) : (
+                                recentEntries.map((entry) => (
+                                    <motion.div
+                                        key={entry.id}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="rounded-xl bg-card border border-border/50 p-4"
                                     >
-                                        {isAskingAI ? (
-                                            <>
-                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                Thinking...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Wand2 className="w-4 h-4 mr-2" />
-                                                Ask AI
-                                            </>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-medium text-foreground">
+                                                {new Date(entry.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                            </span>
+                                            {entry.mood && (
+                                                <span className="text-xs px-2 py-1 rounded-full bg-secondary/50">
+                                                    {entry.mood === 'great' ? '😊' : entry.mood === 'okay' ? '😐' : '😔'} {entry.mood}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-muted-foreground mb-2 italic">"{entry.prompt}"</p>
+                                        <p className="text-sm text-foreground line-clamp-3">{entry.content}</p>
+                                        {entry.aiSummary && (
+                                            <div className="mt-2 pt-2 border-t border-border/30">
+                                                <p className="text-xs text-violet flex items-center gap-1">
+                                                    <Sparkles className="w-3 h-3" />
+                                                    {entry.aiSummary}
+                                                </p>
+                                            </div>
                                         )}
-                                    </Button>
-                                </div>
-                            </div>
-
-                            {/* AI Response */}
-                            {aiResponse && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="mt-4 rounded-xl bg-gradient-to-br from-primary/10 to-violet/10 border border-primary/20 p-4"
-                                >
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Sparkles className="w-4 h-4 text-primary" />
-                                        <span className="text-sm font-medium text-primary">AI Response</span>
-                                    </div>
-                                    <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                                        {aiResponse}
-                                    </div>
-                                </motion.div>
+                                    </motion.div>
+                                ))
                             )}
-
-                            {/* Quick Suggestions */}
-                            <div className="mt-4 flex flex-wrap gap-2">
-                                <span className="text-xs text-muted-foreground mr-2">Quick asks:</span>
-                                {['Create a morning routine', 'How to stay focused?', 'Plan my week', 'Motivate me'].map((suggestion) => (
-                                    <button
-                                        key={suggestion}
-                                        onClick={() => setAiQuery(suggestion)}
-                                        className="text-xs px-3 py-1.5 rounded-full bg-secondary/50 text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                                    >
-                                        {suggestion}
-                                    </button>
-                                ))}
-                            </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
-            </motion.div>
-
-            {/* History Toggle */}
-            <button
-                onClick={() => setShowHistory(!showHistory)}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-                {showHistory ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                {showHistory ? 'Hide' : 'Show'} Recent Entries ({recentEntries.length})
-            </button>
-
-            {/* Recent Entries */}
-            <AnimatePresence>
-                {showHistory && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-4"
-                    >
-                        {recentEntries.length === 0 ? (
-                            <p className="text-center text-muted-foreground py-8">No entries yet. Start journaling today!</p>
-                        ) : (
-                            recentEntries.map((entry) => (
-                                <motion.div
-                                    key={entry.id}
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="rounded-xl bg-card border border-border/50 p-4"
-                                >
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="text-sm font-medium text-foreground">
-                                            {new Date(entry.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                                        </span>
-                                        {entry.mood && (
-                                            <span className="text-xs px-2 py-1 rounded-full bg-secondary/50">
-                                                {entry.mood === 'great' ? '😊' : entry.mood === 'okay' ? '😐' : '😔'} {entry.mood}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground mb-2 italic">"{entry.prompt}"</p>
-                                    <p className="text-sm text-foreground line-clamp-3">{entry.content}</p>
-                                    {entry.aiSummary && (
-                                        <div className="mt-2 pt-2 border-t border-border/30">
-                                            <p className="text-xs text-violet flex items-center gap-1">
-                                                <Sparkles className="w-3 h-3" />
-                                                {entry.aiSummary}
-                                            </p>
-                                        </div>
-                                    )}
-                                </motion.div>
-                            ))
-                        )}
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            </ProFeatureGate>
         </div>
     );
 }
