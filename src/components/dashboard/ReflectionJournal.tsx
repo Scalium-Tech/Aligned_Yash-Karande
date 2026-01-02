@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ProFeatureGate } from '@/components/ProFeatureGate';
 
 export function ReflectionJournal() {
-    const { user } = useAuth();
+    const { user, profile } = useAuth();
     const { todayEntry, dailyPrompt, saveEntry, getRecentEntries, isGeneratingAI, saveBrainDump, getBrainDumps, organizeBrainDump } = useJournal(user?.id);
     const [content, setContent] = useState(todayEntry?.content || '');
     const [selectedMood, setSelectedMood] = useState<'great' | 'okay' | 'low' | undefined>(todayEntry?.mood);
@@ -34,7 +34,9 @@ export function ReflectionJournal() {
 
     const handleSave = async () => {
         if (!content.trim()) return;
-        await saveEntry(content, selectedMood);
+        // Only generate AI insights for Pro users
+        const isPro = profile?.is_pro === true;
+        await saveEntry(content, selectedMood, isPro);
         setIsSaved(true);
     };
 

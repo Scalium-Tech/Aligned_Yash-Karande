@@ -163,13 +163,21 @@ export function useJournal(userId?: string) {
     const todayEntry = journal.entries.find(e => e.date === getTodayKey());
     const dailyPrompt = getDailyPrompt();
 
-    const saveEntry = useCallback(async (content: string, mood?: 'great' | 'okay' | 'low') => {
+    const saveEntry = useCallback(async (content: string, mood?: 'great' | 'okay' | 'low', shouldGenerateAI: boolean = true) => {
         const todayKey = getTodayKey();
         const existingIndex = journal.entries.findIndex(e => e.date === todayKey);
 
-        setIsGeneratingAI(true);
-        const { summary, polished } = await generateAIInsights(content, dailyPrompt);
-        setIsGeneratingAI(false);
+        let summary = '';
+        let polished = '';
+
+        // Only generate AI insights if Pro user (shouldGenerateAI = true)
+        if (shouldGenerateAI) {
+            setIsGeneratingAI(true);
+            const result = await generateAIInsights(content, dailyPrompt);
+            summary = result.summary;
+            polished = result.polished;
+            setIsGeneratingAI(false);
+        }
 
         const entry: JournalEntry = {
             id: existingIndex >= 0 ? journal.entries[existingIndex].id : `entry-${Date.now()}`,
