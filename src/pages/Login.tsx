@@ -96,6 +96,11 @@ export default function Login() {
                 required
                 className="h-12"
               />
+              <div className="text-right">
+                <Link to="/forgot-password" className="text-sm text-primary hover:underline">
+                  Forgot Password?
+                </Link>
+              </div>
             </div>
 
             <Button

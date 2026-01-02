@@ -21,6 +21,8 @@ import RefundPolicy from "./pages/RefundPolicy";
 import NotFound from "./pages/NotFound";
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import OnboardingStep1 from "./pages/onboarding/Step1";
 import OnboardingStep2 from "./pages/onboarding/Step2";
@@ -58,6 +60,8 @@ const App = () => (
                 <Route path="/feedback" element={<Feedback />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/onboarding/step-1" element={<OnboardingStep1 />} />
                 <Route path="/onboarding/step-2" element={<OnboardingStep2 />} />
