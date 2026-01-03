@@ -1,15 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { useFocusSessions } from '@/hooks/useFocusSessions';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { useFocusSessionsSupabase, FocusTask } from '@/hooks/useFocusSessionsSupabase';
+import { useAnalyticsSupabase } from '@/hooks/useAnalyticsSupabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { getUserStorageKey } from '@/lib/userStorage';
-
-interface FocusTask {
-    id: string;
-    title: string;
-    duration: number;
-    completed: boolean;
-}
 
 interface FocusTimerContextType {
     // Timer state
@@ -29,8 +21,12 @@ interface FocusTimerContextType {
 
     // Task management
     focusTasks: FocusTask[];
-    setFocusTasks: (tasks: FocusTask[]) => void;
+    setFocusTasks: (tasks: { title: string; duration: number }[]) => void;
+    addFocusTask: (title: string, duration: number) => Promise<void>;
+    updateFocusTask: (taskId: string, updates: { title?: string; duration?: number }) => Promise<void>;
+    deleteFocusTask: (taskId: string) => Promise<void>;
     markTaskComplete: (taskId: string) => void;
+    isLoadingTasks: boolean;
 }
 
 const FocusTimerContext = createContext<FocusTimerContextType | null>(null);
@@ -49,8 +45,19 @@ interface FocusTimerProviderProps {
 
 export function FocusTimerProvider({ children }: FocusTimerProviderProps) {
     const { user } = useAuth();
-    const { startSession, completeSession, cancelSession } = useFocusSessions(user?.id);
-    const { logFocusSession, logTaskComplete } = useAnalytics(user?.id);
+    const {
+        startSession,
+        completeSession,
+        cancelSession,
+        tasks,
+        addTask,
+        updateTask,
+        markTaskComplete: markTaskCompleteSupabase,
+        deleteTask,
+        setTasksFromAI,
+        isLoading: isLoadingTasks,
+    } = useFocusSessionsSupabase(user?.id);
+    const { logFocusSession, logTaskComplete } = useAnalyticsSupabase(user?.id);
 
     const [isRunning, setIsRunning] = useState(false);
     const [timeRemaining, setTimeRemaining] = useState(0);
@@ -58,24 +65,8 @@ export function FocusTimerProvider({ children }: FocusTimerProviderProps) {
     const [currentTask, setCurrentTask] = useState<FocusTask | null>(null);
     const [mode, setMode] = useState<'focus' | 'pomodoro-work' | 'pomodoro-break'>('focus');
     const [pomodoroCount, setPomodoroCount] = useState(0);
-    const [focusTasks, setFocusTasks] = useState<FocusTask[]>([]);
 
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-    // Load tasks from localStorage
-    useEffect(() => {
-        const key = getUserStorageKey('aligned_focus_tasks', user?.id);
-        const savedTasks = localStorage.getItem(key);
-        if (savedTasks) {
-            try {
-                setFocusTasks(JSON.parse(savedTasks));
-            } catch {
-                setFocusTasks([]);
-            }
-        } else {
-            setFocusTasks([]);
-        }
-    }, [user?.id]);
 
     // Timer tick
     useEffect(() => {
@@ -103,13 +94,13 @@ export function FocusTimerProvider({ children }: FocusTimerProviderProps) {
         };
     }, [isRunning, timeRemaining]);
 
-    const handleTimerComplete = useCallback(() => {
+    const handleTimerComplete = useCallback(async () => {
         setIsRunning(false);
 
         if (mode === 'pomodoro-work') {
             setPomodoroCount(prev => prev + 1);
             logFocusSession(25);
-            completeSession(25);
+            await completeSession(25);
             setMode('pomodoro-break');
             setTimeRemaining(5 * 60);
             setTotalDuration(5 * 60);
@@ -120,10 +111,10 @@ export function FocusTimerProvider({ children }: FocusTimerProviderProps) {
         } else {
             const minutes = currentTask?.duration || Math.round(totalDuration / 60);
             logFocusSession(minutes);
-            completeSession(minutes);
+            await completeSession(minutes);
 
             if (currentTask) {
-                markTaskComplete(currentTask.id);
+                await handleMarkTaskComplete(currentTask.id);
                 setCurrentTask(null);
             }
         }
@@ -155,17 +146,17 @@ export function FocusTimerProvider({ children }: FocusTimerProviderProps) {
         cancelSession();
     }, [cancelSession]);
 
-    const finishEarly = useCallback(() => {
+    const finishEarly = useCallback(async () => {
         const elapsed = totalDuration - timeRemaining;
         const minutesFocused = Math.round(elapsed / 60);
 
         if (minutesFocused > 0) {
             logFocusSession(minutesFocused);
-            completeSession(minutesFocused);
+            await completeSession(minutesFocused);
         }
 
         if (currentTask) {
-            markTaskComplete(currentTask.id);
+            await handleMarkTaskComplete(currentTask.id);
         }
 
         setIsRunning(false);
@@ -174,21 +165,26 @@ export function FocusTimerProvider({ children }: FocusTimerProviderProps) {
         setCurrentTask(null);
     }, [totalDuration, timeRemaining, currentTask, logFocusSession, completeSession]);
 
-    const markTaskComplete = useCallback((taskId: string) => {
-        setFocusTasks(prev => {
-            const updated = prev.map(t =>
-                t.id === taskId ? { ...t, completed: true } : t
-            );
-            const key = getUserStorageKey('aligned_focus_tasks', user?.id);
-            localStorage.setItem(key, JSON.stringify(updated));
+    const handleMarkTaskComplete = useCallback(async (taskId: string) => {
+        await markTaskCompleteSupabase(taskId);
+        logTaskComplete(tasks.length);
+    }, [markTaskCompleteSupabase, logTaskComplete, tasks.length]);
 
-            // Log task completion to analytics with total tasks count
-            const totalTasks = updated.length;
-            logTaskComplete(totalTasks);
+    const handleSetFocusTasks = useCallback(async (newTasks: { title: string; duration: number }[]) => {
+        await setTasksFromAI(newTasks);
+    }, [setTasksFromAI]);
 
-            return updated;
-        });
-    }, [user?.id, logTaskComplete]);
+    const handleAddFocusTask = useCallback(async (title: string, duration: number) => {
+        await addTask(title, duration);
+    }, [addTask]);
+
+    const handleUpdateFocusTask = useCallback(async (taskId: string, updates: { title?: string; duration?: number }) => {
+        await updateTask(taskId, updates);
+    }, [updateTask]);
+
+    const handleDeleteFocusTask = useCallback(async (taskId: string) => {
+        await deleteTask(taskId);
+    }, [deleteTask]);
 
     const value: FocusTimerContextType = {
         isRunning,
@@ -202,9 +198,13 @@ export function FocusTimerProvider({ children }: FocusTimerProviderProps) {
         resumeTimer,
         resetTimer,
         finishEarly,
-        focusTasks,
-        setFocusTasks,
-        markTaskComplete,
+        focusTasks: tasks,
+        setFocusTasks: handleSetFocusTasks,
+        addFocusTask: handleAddFocusTask,
+        updateFocusTask: handleUpdateFocusTask,
+        deleteFocusTask: handleDeleteFocusTask,
+        markTaskComplete: handleMarkTaskComplete,
+        isLoadingTasks,
     };
 
     return (

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Lightbulb, Check, Sparkles, ChevronDown, ChevronUp, Calendar, Eye, X, CheckCircle2, Circle, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAnalyticsSupabase } from '@/hooks/useAnalyticsSupabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserStorageKey } from '@/lib/userStorage';
 
@@ -98,7 +98,7 @@ function generateWeeklyPlan(quarterGoal: string, quarterNum: number): WeeklyPlan
 
 export function YearlyQuarterlyGoal({ yearlyGoalTitle, quarterlyGoals, yourWhyDetail }: YearlyQuarterlyGoalProps) {
     const { user } = useAuth();
-    const { logHabitComplete } = useAnalytics(user?.id);
+    const { logHabitComplete } = useAnalyticsSupabase(user?.id);
     const [expandedQuarter, setExpandedQuarter] = useState<string | null>(null);
     const [showFullPlanModal, setShowFullPlanModal] = useState(false);
     const [selectedQuarterPlan, setSelectedQuarterPlan] = useState<{ quarter: string; goal: string; plan: WeeklyPlanItem[] } | null>(null);

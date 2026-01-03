@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Lightbulb, TrendingDown, TrendingUp, Clock, Zap, Target, Brain, RefreshCw } from 'lucide-react';
-import { useAnalytics } from '@/hooks/useAnalytics';
-import { useJournal } from '@/hooks/useJournal';
+import { useAnalyticsSupabase } from '@/hooks/useAnalyticsSupabase';
+import { useJournalSupabase } from '@/hooks/useJournalSupabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import { supabase } from '@/lib/supabase';
 
 interface FrictionAlert {
     id: string;
@@ -15,15 +16,19 @@ interface FrictionAlert {
     color: string;
 }
 
+function getTodayKey(): string {
+    return new Date().toISOString().split('T')[0];
+}
+
 export function FrictionAlerts() {
     const { user } = useAuth();
-    const { analytics, getWeeklyData } = useAnalytics(user?.id);
-    const { getWeeklySummary, getRecentEntries } = useJournal(user?.id);
+    const { analytics, getWeeklyData } = useAnalyticsSupabase(user?.id);
+    const { getWeeklyJournalStats, getRecentEntries } = useJournalSupabase(user?.id);
     const [aiInsight, setAiInsight] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const weeklyData = getWeeklyData();
-    const journalSummary = getWeeklySummary();
+    const journalSummary = getWeeklyJournalStats();
     const recentEntries = getRecentEntries(3);
 
     // Calculate stats for insights
@@ -31,7 +36,7 @@ export function FrictionAlerts() {
     const totalTasks = weeklyData.reduce((sum, d) => sum + d.tasksCompleted, 0);
 
     // Generate fallback insight based on data patterns
-    const generateFallbackInsight = () => {
+    const generateFallbackInsight = useCallback(() => {
         if (totalFocus > 60 && totalTasks > 3) {
             return `You've been remarkably productive this week with ${totalFocus} minutes of focus and ${totalTasks} tasks completed. Consider scheduling some rest to maintain this momentum.`;
         }
@@ -48,18 +53,42 @@ export function FrictionAlerts() {
             return `Journaling is a powerful habit. Your ${journalSummary.entriesCount} entries show you're building self-awareness. Keep reflecting on your progress.`;
         }
         return "Start your journey by completing a focus session, finishing a small task, or writing a brief journal entry. Small steps lead to big transformations.";
-    };
+    }, [totalFocus, totalTasks, analytics.currentStreak, journalSummary.entriesCount]);
 
     // Generate AI insight based on journal entries and activity
-    const generateAIInsight = async () => {
-        const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+    const generateAIInsight = useCallback(async (forceRefresh: boolean = false) => {
+        if (!user?.id) return;
 
         setIsLoading(true);
+        const today = getTodayKey();
+
+        // Check cache first (unless forcing refresh)
+        if (!forceRefresh) {
+            try {
+                const { data: cached } = await supabase
+                    .from('ai_insights')
+                    .select('insight')
+                    .eq('user_id', user.id)
+                    .eq('insight_date', today)
+                    .single();
+
+                if (cached?.insight) {
+                    setAiInsight(cached.insight);
+                    setIsLoading(false);
+                    return;
+                }
+            } catch {
+                // No cache, continue to generate
+            }
+        }
+
+        const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
 
         // If no API key, use fallback
         if (!apiKey) {
             console.log('No API key found, using fallback insight');
-            setAiInsight(generateFallbackInsight());
+            const fallback = generateFallbackInsight();
+            setAiInsight(fallback);
             setIsLoading(false);
             return;
         }
@@ -67,7 +96,7 @@ export function FrictionAlerts() {
         try {
             // Build context from journal entries if available
             const entriesText = recentEntries.length > 0
-                ? recentEntries.map(e => `${e.date} (mood: ${e.mood}): ${e.content}`).join('\n')
+                ? recentEntries.map(e => `${e.entry_date} (mood: ${e.mood}): ${e.content}`).join('\n')
                 : 'No journal entries yet this week.';
 
             const prompt = `You are a compassionate AI coach. Based on the user's recent activity and journal entries, provide ONE short, specific, actionable insight (2-3 sentences max).
@@ -101,7 +130,12 @@ Focus on: patterns you notice, gentle encouragement, or a specific suggestion ba
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
                 if (text) {
                     setAiInsight(text);
-                    console.log('Generated AI insight:', text);
+                    // Cache the insight
+                    await supabase.from('ai_insights').upsert({
+                        user_id: user.id,
+                        insight_date: today,
+                        insight: text,
+                    }, { onConflict: 'user_id,insight_date' });
                 } else {
                     setAiInsight(generateFallbackInsight());
                 }
@@ -115,14 +149,14 @@ Focus on: patterns you notice, gentle encouragement, or a specific suggestion ba
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [user?.id, recentEntries, totalFocus, totalTasks, analytics.currentStreak, journalSummary, generateFallbackInsight]);
 
     // Auto-generate insight on mount
     useEffect(() => {
         if (!aiInsight) {
             generateAIInsight();
         }
-    }, [analytics, journalSummary.entriesCount]);
+    }, []);
 
     // Generate rule-based alerts
     const generateAlerts = (): FrictionAlert[] => {
@@ -304,7 +338,7 @@ Focus on: patterns you notice, gentle encouragement, or a specific suggestion ba
 
                 {/* Refresh button */}
                 <Button
-                    onClick={generateAIInsight}
+                    onClick={() => generateAIInsight(true)}
                     variant="ghost"
                     size="sm"
                     className="w-full mt-2"

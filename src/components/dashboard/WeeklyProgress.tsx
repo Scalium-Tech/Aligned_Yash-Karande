@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 'recharts';
 import { TrendingUp, Clock, CheckCircle2, Flame, Trophy, ListChecks, Heart } from 'lucide-react';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAnalyticsSupabase } from '@/hooks/useAnalyticsSupabase';
 import { useGoals } from '@/hooks/useGoals';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserStorageKey } from '@/lib/userStorage';
 
 export function WeeklyProgress() {
     const { user } = useAuth();
-    const { analytics, getWeeklyData } = useAnalytics(user?.id);
+    const { analytics, getWeeklyData } = useAnalyticsSupabase(user?.id);
     const { getActiveChallenges } = useGoals(user?.id);
     const weeklyData = getWeeklyData();
     const activeChallenges = getActiveChallenges();

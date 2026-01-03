@@ -80,7 +80,7 @@ Built for students, professionals, and creators who want to build meaningful liv
 
 ## 🎯 Goals & Challenges
 
-### 🏆 21/30/90-Day Challenges
+### 🏆 30/60/90-Day Challenges
 - AI-generated personalized challenges based on onboarding
 - Custom challenge creation
 - Daily check-in system

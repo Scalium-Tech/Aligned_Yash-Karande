@@ -6,9 +6,9 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 'recharts';
-import { useFocusSessions } from '@/hooks/useFocusSessions';
+import { useFocusSessionsSupabase } from '@/hooks/useFocusSessionsSupabase';
 import { useAnalytics } from '@/hooks/useAnalytics';
-import { useGoals } from '@/hooks/useGoals';
+import { useGoalsSupabase } from '@/hooks/useGoalsSupabase';
 import { useFocusTimer } from '@/contexts/FocusTimerContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserStorageKey } from '@/lib/userStorage';
@@ -19,9 +19,9 @@ interface FocusSessionsProps {
 
 export function FocusSessions({ userIdentities }: FocusSessionsProps) {
     const { user } = useAuth();
-    const { focusData, getTodayStats, getWeekStats } = useFocusSessions(user?.id);
+    const { getTodayStats, getWeekStats, getTotals, getDayStreak, isLoading: isLoadingFocus } = useFocusSessionsSupabase(user?.id);
     const { analytics, getWeeklyData } = useAnalytics(user?.id);
-    const { getActiveChallenges } = useGoals(user?.id);
+    const { challenges } = useGoalsSupabase(user?.id);
     const {
         isRunning,
         timeRemaining,
@@ -53,7 +53,7 @@ export function FocusSessions({ userIdentities }: FocusSessionsProps) {
 
     const todayStats = getTodayStats();
     const weeklyData = getWeeklyData();
-    const activeChallenges = getActiveChallenges();
+    const activeChallenges = challenges.filter(c => c.is_active);
 
     const totalTasksThisWeek = weeklyData.reduce((sum, d) => sum + d.tasksCompleted, 0);
 
@@ -85,15 +85,15 @@ export function FocusSessions({ userIdentities }: FocusSessionsProps) {
     ).length;
 
     const challengeCheckInsTotal = activeChallenges.reduce((sum, c) => {
-        const weeklyCheckIns = c.checkIns.filter(date => last7DaysStrings.includes(date)).length;
-        return sum + weeklyCheckIns;
+        const checkInCount = c.checkIns?.filter((date: string) => last7DaysStrings.includes(date)).length || 0;
+        return sum + checkInCount;
     }, 0);
 
     // Map daily data for the 4-metric chart
     const chartData = weeklyData.map((d, idx) => {
         const dateStr = last7DaysStrings[idx];
         const quarterlyForDay = Object.values(quarterlyCompletions).filter(date => date === dateStr).length;
-        const challengesForDay = activeChallenges.filter(c => c.checkIns.includes(dateStr)).length;
+        const challengesForDay = activeChallenges.filter(c => c.checkIns?.includes(dateStr)).length;
 
         return {
             ...d,
@@ -645,7 +645,7 @@ Return only JSON, no other text.`;
                         </div>
                         <div className="bg-secondary/30 rounded-xl p-4 text-center">
                             <Flame className="w-5 h-5 text-orange-500 mx-auto mb-2" />
-                            <p className="text-2xl font-bold text-foreground">{analytics.currentStreak}</p>
+                            <p className="text-2xl font-bold text-foreground">{getDayStreak()}</p>
                             <p className="text-xs text-muted-foreground">day streak</p>
                         </div>
                     </div>
@@ -701,7 +701,7 @@ Return only JSON, no other text.`;
                         </div>
                         <div className="flex justify-between text-right">
                             <span className="text-muted-foreground mr-2">Focus time</span>
-                            <span className="font-bold text-foreground">{focusData.totalMinutes}m</span>
+                            <span className="font-bold text-foreground">{getTotals().totalMinutes}m</span>
                         </div>
                     </div>
                 </motion.div>

@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect, useCallback } from 'react';
 import { Play, Pause, CheckCircle2, Clock, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAnalyticsSupabase } from '@/hooks/useAnalyticsSupabase';
 
 interface FocusBlockTimerProps {
     initialMinutes?: number;
@@ -14,7 +14,7 @@ export function FocusBlockTimer({ initialMinutes = 45, onComplete }: FocusBlockT
     const [timeRemaining, setTimeRemaining] = useState(initialMinutes * 60);
     const [hasStarted, setHasStarted] = useState(false);
     const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
-    const { logFocusSession, analytics } = useAnalytics();
+    const { logFocusSession, analytics } = useAnalyticsSupabase();
 
     const formatTime = (seconds: number) => {
         const mins = Math.floor(seconds / 60);

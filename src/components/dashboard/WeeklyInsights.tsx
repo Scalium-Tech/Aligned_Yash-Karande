@@ -5,7 +5,7 @@ import {
     Target, Clock, CheckCircle2, Flame, Calendar, Sparkles, Trophy, ListChecks
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAnalyticsSupabase } from '@/hooks/useAnalyticsSupabase';
 import { useJournal } from '@/hooks/useJournal';
 import { useGoals } from '@/hooks/useGoals';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,7 +20,7 @@ interface WeekComparison {
 
 export function WeeklyInsights() {
     const { user } = useAuth();
-    const { analytics, getWeeklyData } = useAnalytics(user?.id);
+    const { analytics, getWeeklyData } = useAnalyticsSupabase(user?.id);
     const { getWeeklySummary, getRecentEntries } = useJournal(user?.id);
     const { getActiveChallenges } = useGoals(user?.id);
 

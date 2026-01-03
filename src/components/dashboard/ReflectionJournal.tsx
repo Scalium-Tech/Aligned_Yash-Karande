@@ -1,18 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Sparkles, Send, Smile, Meh, Frown, Loader2, ChevronDown, ChevronUp, MessageCircle, Wand2, Brain, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useJournal } from '@/hooks/useJournal';
+import { useJournalSupabase } from '@/hooks/useJournalSupabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProFeatureGate } from '@/components/ProFeatureGate';
 
 export function ReflectionJournal() {
     const { user, profile } = useAuth();
-    const { todayEntry, dailyPrompt, saveEntry, getRecentEntries, isGeneratingAI, saveBrainDump, getBrainDumps, organizeBrainDump } = useJournal(user?.id);
-    const [content, setContent] = useState(todayEntry?.content || '');
-    const [selectedMood, setSelectedMood] = useState<'great' | 'okay' | 'low' | undefined>(todayEntry?.mood);
+    const {
+        todayEntry,
+        dailyPrompt,
+        saveEntry,
+        getRecentEntries,
+        isGeneratingAI,
+        isLoading,
+        saveBrainDump,
+        getBrainDumps,
+        organizeBrainDump,
+        saveAIGuidance,
+        getRecentAIChats,
+    } = useJournalSupabase(user?.id);
+
+    const [content, setContent] = useState('');
+    const [selectedMood, setSelectedMood] = useState<'great' | 'okay' | 'low' | undefined>(undefined);
     const [showHistory, setShowHistory] = useState(false);
-    const [isSaved, setIsSaved] = useState(!!todayEntry);
+    const [isSaved, setIsSaved] = useState(false);
 
     // AI Chat state
     const [showAIChat, setShowAIChat] = useState(false);
@@ -29,23 +42,34 @@ export function ReflectionJournal() {
     const [showBrainDumpHistory, setShowBrainDumpHistory] = useState(false);
     const [currentDumpId, setCurrentDumpId] = useState<string | null>(null);
 
+    // Load today's entry when it changes
+    useEffect(() => {
+        if (todayEntry) {
+            setContent(todayEntry.content || '');
+            setSelectedMood(todayEntry.mood || undefined);
+            setIsSaved(true);
+        }
+    }, [todayEntry]);
+
     const recentEntries = getRecentEntries(5);
     const brainDumps = getBrainDumps(5);
+    const recentChats = getRecentAIChats(5);
 
     const handleSave = async () => {
         if (!content.trim()) return;
-        // Only generate AI insights for Pro users
         const isPro = profile?.is_pro === true;
         await saveEntry(content, selectedMood, isPro);
         setIsSaved(true);
     };
 
-    const handleSaveBrainDump = () => {
+    const handleSaveBrainDump = async () => {
         if (!brainDumpContent.trim()) return;
-        const entry = saveBrainDump(brainDumpContent);
-        setCurrentDumpId(entry.id);
-        setIsBrainDumpSaved(true);
-        setOrganizedContent('');
+        const entry = await saveBrainDump(brainDumpContent);
+        if (entry) {
+            setCurrentDumpId(entry.id);
+            setIsBrainDumpSaved(true);
+            setOrganizedContent('');
+        }
     };
 
     const handleOrganizeBrainDump = async () => {
@@ -73,48 +97,10 @@ export function ReflectionJournal() {
 
         // Fallback responses for common questions
         const fallbackResponses: Record<string, string> = {
-            'plan my week': `Here's a simple weekly planning framework:
-
-**📅 Weekly Planning Steps:**
-1. **Review your goals** - What are your top 3 priorities this week?
-2. **Block your time** - Schedule your most important tasks for when you have peak energy
-3. **Build in buffers** - Leave 20% of your time unscheduled for unexpected tasks
-4. **Daily review** - Spend 5 minutes each morning reviewing today's plan
-
-**💡 Pro tip:** Start with your "non-negotiables" - the tasks that will have the biggest impact on your goals.`,
-            'create a morning routine': `Here's a powerful morning routine template:
-
-**🌅 Ideal Morning Routine (90 mins):**
-1. **Wake up** - Same time daily, no snooze
-2. **Hydrate** - Drink a full glass of water (5 mins)
-3. **Move** - Light exercise or stretching (15 mins)
-4. **Mindfulness** - Meditation or journaling (10 mins)
-5. **Plan** - Review your day's priorities (10 mins)
-6. **Deep work** - Tackle your most important task (50 mins)
-
-**💡 Start small:** Pick just 2-3 elements and build from there.`,
-            'how to stay focused?': `Here are proven strategies to stay focused:
-
-**🎯 Focus Tips:**
-1. **Remove distractions** - Put phone in another room, close unnecessary tabs
-2. **Use time blocks** - Work in 25-50 minute focused sessions
-3. **Single-task** - Do one thing at a time, not multitasking
-4. **Take breaks** - 5-10 minute breaks between sessions
-5. **Optimize your environment** - Good lighting, comfortable temperature
-
-**💡 The 2-minute rule:** If a distracting thought comes up, write it down to address later.`,
-            'motivate me': `You've got this! Here's some perspective:
-
-**💪 Remember:**
-- Every expert was once a beginner
-- Progress, not perfection, is the goal
-- Small steps lead to big changes
-- You're reading this because you WANT to improve
-
-**🔥 Action creates motivation:**
-Start with just 5 minutes of work. Motion creates emotion - once you begin, momentum builds.
-
-**Your identity:** You are becoming the person you want to be, one small action at a time. Keep going!`
+            'plan my week': `Here's a simple weekly planning framework:\n\n**📅 Weekly Planning Steps:**\n1. **Review your goals** - What are your top 3 priorities this week?\n2. **Block your time** - Schedule your most important tasks for when you have peak energy\n3. **Build in buffers** - Leave 20% of your time unscheduled for unexpected tasks\n4. **Daily review** - Spend 5 minutes each morning reviewing today's plan\n\n**💡 Pro tip:** Start with your "non-negotiables" - the tasks that will have the biggest impact on your goals.`,
+            'create a morning routine': `Here's a powerful morning routine template:\n\n**🌅 Ideal Morning Routine (90 mins):**\n1. **Wake up** - Same time daily, no snooze\n2. **Hydrate** - Drink a full glass of water (5 mins)\n3. **Move** - Light exercise or stretching (15 mins)\n4. **Mindfulness** - Meditation or journaling (10 mins)\n5. **Plan** - Review your day's priorities (10 mins)\n6. **Deep work** - Tackle your most important task (50 mins)\n\n**💡 Start small:** Pick just 2-3 elements and build from there.`,
+            'how to stay focused?': `Here are proven strategies to stay focused:\n\n**🎯 Focus Tips:**\n1. **Remove distractions** - Put phone in another room, close unnecessary tabs\n2. **Use time blocks** - Work in 25-50 minute focused sessions\n3. **Single-task** - Do one thing at a time, not multitasking\n4. **Take breaks** - 5-10 minute breaks between sessions\n5. **Optimize your environment** - Good lighting, comfortable temperature\n\n**💡 The 2-minute rule:** If a distracting thought comes up, write it down to address later.`,
+            'motivate me': `You've got this! Here's some perspective:\n\n**💪 Remember:**\n- Every expert was once a beginner\n- Progress, not perfection, is the goal\n- Small steps lead to big changes\n- You're reading this because you WANT to improve\n\n**🔥 Action creates motivation:**\nStart with just 5 minutes of work. Motion creates emotion - once you begin, momentum builds.\n\n**Your identity:** You are becoming the person you want to be, one small action at a time. Keep going!`
         };
 
         // Check for fallback response
@@ -126,10 +112,10 @@ Start with just 5 minutes of work. Motion creates emotion - once you begin, mome
         if (!apiKey || apiKey === 'your_google_api_key_here') {
             if (fallbackKey) {
                 setAiResponse(fallbackResponses[fallbackKey]);
+                await saveAIGuidance(aiQuery, fallbackResponses[fallbackKey]);
             } else {
-                setAiResponse(`I'd love to help! To enable personalized AI responses, add your Google API key to the .env file.
-
-In the meantime, try these quick asks: "Create a morning routine", "How to stay focused?", "Plan my week", or "Motivate me".`);
+                const fallbackMsg = `I'd love to help! To enable personalized AI responses, add your Google API key to the .env file.\n\nIn the meantime, try these quick asks: "Create a morning routine", "How to stay focused?", "Plan my week", or "Motivate me".`;
+                setAiResponse(fallbackMsg);
             }
             setIsAskingAI(false);
             return;
@@ -147,7 +133,7 @@ Respond helpfully and supportively. If they're asking for a plan, create a clear
 Format your response in a clear, readable way. Use bullet points or numbered lists for plans.`;
 
             const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`,
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -163,9 +149,10 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
             if (response.ok && data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
                 const text = data.candidates[0].content.parts[0].text.trim();
                 setAiResponse(text);
+                // Save to database
+                await saveAIGuidance(aiQuery, text);
             } else if (data.error) {
                 console.error('API Error:', data.error);
-                // Use fallback if available
                 if (fallbackKey) {
                     setAiResponse(fallbackResponses[fallbackKey]);
                 } else {
@@ -175,7 +162,6 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
                 setAiResponse("I couldn't respond to that query due to content safety guidelines. Please try rephrasing your question.");
             } else {
                 console.error('Unexpected response:', data);
-                // Use fallback if available
                 if (fallbackKey) {
                     setAiResponse(fallbackResponses[fallbackKey]);
                 } else {
@@ -184,7 +170,6 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
             }
         } catch (error) {
             console.error('Error asking AI:', error);
-            // Use fallback if available
             if (fallbackKey) {
                 setAiResponse(fallbackResponses[fallbackKey]);
             } else {
@@ -200,6 +185,25 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
         { value: 'okay' as const, icon: Meh, label: 'Okay', color: 'text-amber-500' },
         { value: 'low' as const, icon: Frown, label: 'Low', color: 'text-rose-500' },
     ];
+
+    // Loading skeleton
+    if (isLoading) {
+        return (
+            <div className="space-y-6">
+                <div className="rounded-2xl bg-card border border-border/50 p-6 shadow-sm animate-pulse">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-secondary"></div>
+                        <div className="space-y-2">
+                            <div className="h-4 w-32 bg-secondary rounded"></div>
+                            <div className="h-3 w-24 bg-secondary rounded"></div>
+                        </div>
+                    </div>
+                    <div className="h-24 bg-secondary/50 rounded-xl mb-4"></div>
+                    <div className="h-40 bg-secondary/30 rounded-xl"></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -268,7 +272,7 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
                 />
 
                 {/* AI Smart Insights */}
-                {todayEntry?.aiSummary && (
+                {todayEntry?.ai_summary && (
                     <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -279,7 +283,7 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
                             <span className="text-sm font-semibold text-violet">Smart Insights</span>
                         </div>
                         <div className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                            {todayEntry.aiSummary.split('\\n').join('\n')}
+                            {todayEntry.ai_summary.split('\\n').join('\n')}
                         </div>
                     </motion.div>
                 )}
@@ -452,14 +456,14 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
                                                         >
                                                             <div className="flex items-center justify-between mb-1">
                                                                 <span className="text-xs text-muted-foreground">
-                                                                    {new Date(dump.timestamp).toLocaleString('en-US', {
+                                                                    {new Date(dump.created_at).toLocaleString('en-US', {
                                                                         month: 'short',
                                                                         day: 'numeric',
                                                                         hour: 'numeric',
                                                                         minute: '2-digit'
                                                                     })}
                                                                 </span>
-                                                                {dump.organizedContent && (
+                                                                {dump.organized_content && (
                                                                     <span className="text-xs text-violet flex items-center gap-1">
                                                                         <Sparkles className="w-3 h-3" /> Organized
                                                                     </span>
@@ -575,6 +579,27 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
                                         </button>
                                     ))}
                                 </div>
+
+                                {/* Recent AI Chats */}
+                                {recentChats.length > 0 && (
+                                    <div className="mt-4 pt-4 border-t border-border/30">
+                                        <p className="text-xs text-muted-foreground mb-2">Recent conversations:</p>
+                                        <div className="space-y-2 max-h-32 overflow-y-auto">
+                                            {recentChats.slice(0, 3).map((chat) => (
+                                                <div
+                                                    key={chat.id}
+                                                    className="p-2 rounded-lg bg-secondary/20 cursor-pointer hover:bg-secondary/30 transition-colors"
+                                                    onClick={() => {
+                                                        setAiQuery(chat.query);
+                                                        setAiResponse(chat.response);
+                                                    }}
+                                                >
+                                                    <p className="text-xs text-foreground truncate">{chat.query}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -612,7 +637,7 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
                                     >
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="text-sm font-medium text-foreground">
-                                                {new Date(entry.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
+                                                {new Date(entry.entry_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                                             </span>
                                             {entry.mood && (
                                                 <span className="text-xs px-2 py-1 rounded-full bg-secondary/50">
@@ -622,11 +647,11 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
                                         </div>
                                         <p className="text-xs text-muted-foreground mb-2 italic">"{entry.prompt}"</p>
                                         <p className="text-sm text-foreground line-clamp-3">{entry.content}</p>
-                                        {entry.aiSummary && (
+                                        {entry.ai_summary && (
                                             <div className="mt-2 pt-2 border-t border-border/30">
                                                 <p className="text-xs text-violet flex items-center gap-1">
                                                     <Sparkles className="w-3 h-3" />
-                                                    {entry.aiSummary}
+                                                    {entry.ai_summary}
                                                 </p>
                                             </div>
                                         )}

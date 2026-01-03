@@ -15,7 +15,7 @@ import {
     LogOut,
     Heart
 } from 'lucide-react';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAnalyticsSupabase } from '@/hooks/useAnalyticsSupabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -42,7 +42,7 @@ const bottomItems = [
 export function Sidebar({ activeSection, onSectionChange, onLogout }: SidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const { user } = useAuth();
-    const { analytics, identityScore } = useAnalytics(user?.id);
+    const { analytics, identityScore } = useAnalyticsSupabase(user?.id);
 
     return (
         <motion.aside

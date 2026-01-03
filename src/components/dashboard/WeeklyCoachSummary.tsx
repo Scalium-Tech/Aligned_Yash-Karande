@@ -1,32 +1,35 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Calendar, TrendingUp, Loader2 } from 'lucide-react';
-import { useAnalytics } from '@/hooks/useAnalytics';
-import { useJournal } from '@/hooks/useJournal';
+import { useAnalyticsSupabase } from '@/hooks/useAnalyticsSupabase';
+import { useJournalSupabase } from '@/hooks/useJournalSupabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+
+function getWeekStart(): string {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(today.setDate(diff));
+    return monday.toISOString().split('T')[0];
+}
 
 export function WeeklyCoachSummary() {
     const { user } = useAuth();
-    const { analytics, getWeeklyData } = useAnalytics(user?.id);
-    const { getWeeklySummary, getRecentEntries } = useJournal(user?.id);
+    const { analytics, getWeeklyData } = useAnalyticsSupabase(user?.id);
+    const { getWeeklyJournalStats } = useJournalSupabase(user?.id);
     const [aiSummary, setAiSummary] = useState<string>('');
     const [isLoading, setIsLoading] = useState(false);
 
     const weeklyData = getWeeklyData();
-    const journalSummary = getWeeklySummary();
-    const recentEntries = getRecentEntries(7);
+    const journalSummary = getWeeklyJournalStats();
 
     // Calculate stats
     const totalFocus = weeklyData.reduce((sum, d) => sum + d.focusMinutes, 0);
     const totalTasks = weeklyData.reduce((sum, d) => sum + d.tasksCompleted, 0);
     const activeDays = weeklyData.filter(d => d.focusMinutes > 0 || d.tasksCompleted > 0).length;
 
-    useEffect(() => {
-        generateWeeklySummary();
-    }, [analytics, journalSummary.entriesCount]);
-
-    const generateFallbackSummary = () => {
-        // Generate a contextual fallback based on actual data
+    const generateFallbackSummary = useCallback(() => {
         if (totalFocus === 0 && totalTasks === 0 && journalSummary.entriesCount === 0) {
             return "Welcome to your weekly summary! Start tracking your progress by completing focus sessions, tasks, or journal entries. Small steps lead to big changes.";
         }
@@ -56,18 +59,41 @@ export function WeeklyCoachSummary() {
         }
 
         return summary;
-    };
+    }, [totalFocus, totalTasks, analytics.currentStreak, journalSummary.entriesCount]);
 
-    const generateWeeklySummary = async () => {
+    const generateWeeklySummary = useCallback(async () => {
+        if (!user?.id) return;
+
+        setIsLoading(true);
+        const weekStart = getWeekStart();
+
+        // Check cache first
+        try {
+            const { data: cached } = await supabase
+                .from('weekly_summaries')
+                .select('ai_summary')
+                .eq('user_id', user.id)
+                .eq('week_start', weekStart)
+                .single();
+
+            if (cached?.ai_summary) {
+                setAiSummary(cached.ai_summary);
+                setIsLoading(false);
+                return;
+            }
+        } catch {
+            // No cache, continue to generate
+        }
+
         const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
 
         if (!apiKey) {
             console.log('No API key found, using fallback summary');
-            setAiSummary(generateFallbackSummary());
+            const fallback = generateFallbackSummary();
+            setAiSummary(fallback);
+            setIsLoading(false);
             return;
         }
-
-        setIsLoading(true);
 
         const prompt = `You are a supportive weekly coach for a personal growth app. Generate a brief, encouraging weekly summary (2-3 sentences) based on this data:
 
@@ -105,7 +131,15 @@ Return only the summary text, no formatting or quotes.`;
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
                 if (text) {
                     setAiSummary(text);
-                    console.log('Generated weekly summary:', text);
+                    // Cache the summary
+                    await supabase.from('weekly_summaries').upsert({
+                        user_id: user.id,
+                        week_start: weekStart,
+                        ai_summary: text,
+                        total_focus_minutes: totalFocus,
+                        total_tasks: totalTasks,
+                        journal_count: journalSummary.entriesCount,
+                    }, { onConflict: 'user_id,week_start' });
                 } else {
                     setAiSummary(generateFallbackSummary());
                 }
@@ -119,7 +153,11 @@ Return only the summary text, no formatting or quotes.`;
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [user?.id, totalFocus, totalTasks, activeDays, analytics.currentStreak, journalSummary, generateFallbackSummary]);
+
+    useEffect(() => {
+        generateWeeklySummary();
+    }, []);
 
     return (
         <motion.div

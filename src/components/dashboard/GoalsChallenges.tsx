@@ -5,8 +5,8 @@ import {
     Award, Trash2, X, Sparkles, Loader2, Wand2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useGoals } from '@/hooks/useGoals';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { useGoalsSupabase } from '@/hooks/useGoalsSupabase';
+import { useAnalyticsSupabase } from '@/hooks/useAnalyticsSupabase';
 import { useJournal } from '@/hooks/useJournal';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
@@ -40,20 +40,23 @@ export function GoalsChallenges() {
     const { user } = useAuth();
 
     const {
+        activeChallenges,
+        completedChallenges,
+        earnedBadges,
+        unearnedBadges,
+        isLoading,
         createChallenge,
         checkInChallenge,
         deleteChallenge,
         checkAllBadges,
-        getActiveChallenges,
-        getCompletedChallenges,
-        getEarnedBadges,
-        getUnearnedBadges,
+        hasCheckedInToday,
+        getCheckInCount,
         showCelebration,
         celebrationMessage,
         dismissCelebration,
-    } = useGoals(user?.id);
+    } = useGoalsSupabase(user?.id);
 
-    const { analytics, logChallengeCheckIn } = useAnalytics(user?.id);
+    const { analytics, logChallengeCheckIn } = useAnalyticsSupabase(user?.id);
     const { journal } = useJournal(user?.id);
 
     const [showNewChallenge, setShowNewChallenge] = useState(false);
@@ -71,11 +74,6 @@ export function GoalsChallenges() {
     // Weekly Plan Modal State
     const [showWeeklyPlanModal, setShowWeeklyPlanModal] = useState(false);
     const [selectedChallengeWeeklyPlan, setSelectedChallengeWeeklyPlan] = useState<{ title: string; plan: WeekPlan[]; currentWeek: number } | null>(null);
-
-    const activeChallenges = getActiveChallenges();
-    const completedChallenges = getCompletedChallenges();
-    const earnedBadges = getEarnedBadges();
-    const unearnedBadges = getUnearnedBadges();
 
     // Fetch user identity data from Supabase
     useEffect(() => {
@@ -102,13 +100,15 @@ export function GoalsChallenges() {
 
     // Check badges on load
     useEffect(() => {
-        checkAllBadges({
-            streak: analytics.currentStreak,
-            focus: analytics.totalFocusMinutes,
-            tasks: analytics.totalTasksCompleted,
-            journal: journal.entries.length,
-        });
-    }, [analytics, journal, checkAllBadges]);
+        if (!isLoading) {
+            checkAllBadges({
+                streak: analytics.currentStreak,
+                focus: analytics.totalFocusMinutes,
+                tasks: analytics.totalTasksCompleted,
+                journal: journal.entries.length,
+            });
+        }
+    }, [analytics, journal, checkAllBadges, isLoading]);
 
     // Generate AI Challenge based on user's onboarding data
     const generateAIChallenge = async (days: number = aiDays) => {
@@ -206,7 +206,7 @@ Return only JSON.`;
         }
     };
 
-    const acceptAIChallenge = () => {
+    const acceptAIChallenge = async () => {
         if (!suggestedChallenge) return;
 
         // Build description with daily actions
@@ -217,7 +217,7 @@ Return only JSON.`;
             description += `\n\n<!-- WEEKLY_PLAN_JSON:${JSON.stringify(suggestedChallenge.weeklyPlan)} -->`;
         }
 
-        createChallenge(suggestedChallenge.title, description, aiDays);
+        await createChallenge(suggestedChallenge.title, description, aiDays);
 
         toast.success('Challenge created!', {
             description: `Your ${aiDays}-day challenge has started.`,
@@ -227,19 +227,58 @@ Return only JSON.`;
         setShowAIChallenge(false);
     };
 
-    const handleCreateChallenge = () => {
+    const handleCreateChallenge = async () => {
         if (!newTitle.trim()) return;
-        createChallenge(newTitle, newDescription, newDays);
+        await createChallenge(newTitle, newDescription, newDays);
         setNewTitle('');
         setNewDescription('');
         setNewDays(90);
         setShowNewChallenge(false);
     };
 
-    const getTodayKey = () => new Date().toISOString().split('T')[0];
-    const hasCheckedInToday = (challenge: ReturnType<typeof getActiveChallenges>[0]) => {
-        return challenge.checkIns.includes(getTodayKey());
+    const handleCheckIn = async (challengeId: string) => {
+        const success = await checkInChallenge(challengeId);
+        if (success) {
+            logChallengeCheckIn(activeChallenges.length);
+        }
     };
+
+    const handleDeleteChallenge = async (challengeId: string) => {
+        await deleteChallenge(challengeId);
+    };
+
+    // Loading skeleton
+    if (isLoading) {
+        return (
+            <div className="space-y-6">
+                <div className="rounded-2xl bg-card border border-border/50 p-6 shadow-sm animate-pulse">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-secondary"></div>
+                        <div className="space-y-2">
+                            <div className="h-4 w-32 bg-secondary rounded"></div>
+                            <div className="h-3 w-48 bg-secondary rounded"></div>
+                        </div>
+                    </div>
+                    <div className="space-y-3">
+                        {[1, 2].map(i => (
+                            <div key={i} className="h-32 bg-secondary/50 rounded-xl"></div>
+                        ))}
+                    </div>
+                </div>
+                <div className="rounded-2xl bg-card border border-border/50 p-6 shadow-sm animate-pulse">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-secondary"></div>
+                        <div className="h-4 w-20 bg-secondary rounded"></div>
+                    </div>
+                    <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                            <div key={i} className="h-16 bg-secondary/50 rounded-xl"></div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -498,11 +537,12 @@ Return only JSON.`;
                 ) : (
                     <div className="space-y-3">
                         {activeChallenges.map(challenge => {
-                            const progress = (challenge.daysCompleted / challenge.totalDays) * 100;
-                            const checkedToday = hasCheckedInToday(challenge);
+                            const daysCompleted = getCheckInCount(challenge.id);
+                            const progress = (daysCompleted / challenge.total_days) * 100;
+                            const checkedToday = hasCheckedInToday(challenge.id);
 
                             // Calculate current week based on days completed
-                            const currentWeekNumber = Math.floor(challenge.daysCompleted / 7) + 1;
+                            const currentWeekNumber = Math.floor(daysCompleted / 7) + 1;
 
                             // Parse weekly plan from description if available
                             let weeklyPlan: WeekPlan[] = [];
@@ -599,7 +639,7 @@ Return only JSON.`;
                                             )}
                                         </div>
                                         <button
-                                            onClick={() => deleteChallenge(challenge.id)}
+                                            onClick={() => handleDeleteChallenge(challenge.id)}
                                             className="text-muted-foreground hover:text-destructive transition-colors ml-2"
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -609,7 +649,7 @@ Return only JSON.`;
                                     {/* Progress Bar */}
                                     <div className="mb-3">
                                         <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                                            <span>Day {challenge.daysCompleted} of {challenge.totalDays}</span>
+                                            <span>Day {daysCompleted} of {challenge.total_days}</span>
                                             <span>{Math.round(progress)}%</span>
                                         </div>
                                         <div className="h-2 bg-secondary rounded-full overflow-hidden">
@@ -624,10 +664,7 @@ Return only JSON.`;
 
                                     {/* Check In Button */}
                                     <Button
-                                        onClick={() => {
-                                            checkInChallenge(challenge.id);
-                                            logChallengeCheckIn(activeChallenges.length);
-                                        }}
+                                        onClick={() => handleCheckIn(challenge.id)}
                                         disabled={checkedToday}
                                         variant={checkedToday ? 'outline' : 'default'}
                                         size="sm"
@@ -724,11 +761,11 @@ Return only JSON.`;
                                     <div>
                                         <p className="font-medium text-foreground">{challenge.title}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            Completed on {new Date(challenge.completedAt!).toLocaleDateString()}
+                                            Completed on {new Date(challenge.completed_at!).toLocaleDateString()}
                                         </p>
                                     </div>
                                 </div>
-                                <span className="text-sm font-medium text-emerald-500">{challenge.totalDays} days</span>
+                                <span className="text-sm font-medium text-emerald-500">{challenge.total_days} days</span>
                             </div>
                         ))}
                     </div>
