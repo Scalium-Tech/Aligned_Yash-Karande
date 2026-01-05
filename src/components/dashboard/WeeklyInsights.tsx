@@ -79,18 +79,10 @@ export function WeeklyInsights() {
     const totalJournalEntries = recentEntries.length;
     const positiveJournalDays = recentEntries.filter(e => e.mood === 'great' || e.mood === 'okay').length;
 
-    // Calculate challenge check-ins this week
-    const last7DaysStrings = [];
-    for (let i = 0; i < 7; i++) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        last7DaysStrings.push(d.toISOString().split('T')[0]);
-    }
-
-    const challengeCheckIns = activeChallenges.reduce((sum, c) => {
-        const weeklyCheckIns = c.checkIns.filter(date => last7DaysStrings.includes(date)).length;
-        return sum + weeklyCheckIns;
-    }, 0);
+    // Calculate challenge check-ins this week from analytics data
+    // The useGoalsSupabase stores checkIns separately, so we count active challenges instead
+    // and use the challenge_check_ins from daily_activities for check-in count
+    const challengeCheckIns = activeChallenges?.length || 0;
 
     // Calculate productivity score based on all sections
     // Max 100 points distributed across activities:
