@@ -20,7 +20,7 @@ interface WeekComparison {
 
 export function WeeklyInsights() {
     const { user } = useAuth();
-    const { analytics, getWeeklyData } = useAnalyticsSupabase(user?.id);
+    const { analytics, getWeeklyData, saveWeeklyAnalytics } = useAnalyticsSupabase(user?.id);
     const { getWeeklySummary, getRecentEntries } = useJournal(user?.id);
     const { activeChallenges } = useGoalsSupabase(user?.id);
 
@@ -186,17 +186,27 @@ Be encouraging but honest. Mention specific achievements in goals or challenges 
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
                 if (text) {
                     setAiSummary(text);
+                    // Save AI summary to Supabase weekly_analytics
+                    await saveWeeklyAnalytics(text, productivityScore);
                     console.log('Generated AI weekly summary:', text);
                 } else {
-                    setAiSummary(generateFallback());
+                    const fallback = generateFallback();
+                    setAiSummary(fallback);
+                    await saveWeeklyAnalytics(fallback, productivityScore);
                 }
             } else {
                 console.error('Gemini API error:', response.status);
-                setAiSummary(generateFallback());
+                const fallback = generateFallback();
+                setAiSummary(fallback);
+                // Save fallback summary to Supabase
+                await saveWeeklyAnalytics(fallback, productivityScore);
             }
         } catch (error) {
             console.error('Error generating summary:', error);
-            setAiSummary(generateFallback());
+            const fallback = generateFallback();
+            setAiSummary(fallback);
+            // Save fallback summary to Supabase
+            await saveWeeklyAnalytics(fallback, productivityScore);
         } finally {
             setIsLoading(false);
         }
