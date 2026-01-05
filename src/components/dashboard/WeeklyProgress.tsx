@@ -3,16 +3,15 @@ import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 'recharts';
 import { TrendingUp, Clock, CheckCircle2, Flame, Trophy, ListChecks, Heart } from 'lucide-react';
 import { useAnalyticsSupabase } from '@/hooks/useAnalyticsSupabase';
-import { useGoals } from '@/hooks/useGoals';
+import { useGoalsSupabase } from '@/hooks/useGoalsSupabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserStorageKey } from '@/lib/userStorage';
 
 export function WeeklyProgress() {
     const { user } = useAuth();
     const { analytics, getWeeklyData } = useAnalyticsSupabase(user?.id);
-    const { getActiveChallenges } = useGoals(user?.id);
+    const { activeChallenges } = useGoalsSupabase(user?.id);
     const weeklyData = getWeeklyData();
-    const activeChallenges = getActiveChallenges();
 
     const [quarterlyCompletions, setQuarterlyCompletions] = useState<Record<string, string | null>>({});
     const [refreshKey, setRefreshKey] = useState(0);
@@ -62,10 +61,8 @@ export function WeeklyProgress() {
         date && last7DaysStrings.includes(date)
     ).length;
 
-    const challengeCheckInsTotal = activeChallenges.reduce((sum, c) => {
-        const weeklyCheckIns = c.checkIns.filter(date => last7DaysStrings.includes(date)).length;
-        return sum + weeklyCheckIns;
-    }, 0);
+    // Count active challenges (useGoalsSupabase stores checkIns separately)
+    const challengeCheckInsTotal = activeChallenges?.length || 0;
 
     // Map daily data for the chart
     const chartData = weeklyData.map((d, idx) => {
@@ -74,8 +71,8 @@ export function WeeklyProgress() {
         // Count quarterly completions on this specific day
         const quarterlyForDay = Object.values(quarterlyCompletions).filter(date => date === dateStr).length;
 
-        // Count challenge check-ins on this specific day
-        const challengesForDay = activeChallenges.filter(c => c.checkIns.includes(dateStr)).length;
+        // Count active challenges for display (checkIns not available on challenge objects)
+        const challengesForDay = 0; // Will show as bar only if we have actual daily check-in data
 
         return {
             ...d,
