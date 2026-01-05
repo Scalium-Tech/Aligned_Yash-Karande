@@ -78,6 +78,12 @@ export function WeeklyCoachSummary() {
 
             if (cached?.ai_summary) {
                 setAiSummary(cached.ai_summary);
+                // Update stats in cache (they may have changed since summary was generated)
+                await supabase.from('weekly_summaries').update({
+                    total_focus_minutes: totalFocus,
+                    total_tasks: totalTasks,
+                    journal_count: journalSummary.entriesCount,
+                }).eq('user_id', user.id).eq('week_start', weekStart);
                 setIsLoading(false);
                 return;
             }
