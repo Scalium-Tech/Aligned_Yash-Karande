@@ -78,7 +78,7 @@ export function HeroSection() {
               <div className="flex flex-col sm:flex-row gap-4 mb-10">
                 <Button
                   size="lg"
-                  onClick={() => navigate('/signup')}
+                  onClick={() => scrollToSection('#pricing')}
                   className="bg-gradient-to-r from-primary to-purple-dark hover:opacity-90 text-primary-foreground font-semibold px-8 py-6 text-base shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all group dark:shadow-primary/40"
                 >
                   Start Free

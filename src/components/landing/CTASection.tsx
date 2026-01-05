@@ -1,10 +1,14 @@
 import { AnimatedSection } from './AnimatedSection';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles, Star } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 
 export function CTASection() {
-  const navigate = useNavigate();
+  const scrollToSection = (href: string) => {
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <section id="cta" className="py-24 lg:py-32 relative overflow-hidden">
@@ -37,7 +41,7 @@ export function CTASection() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button
               size="lg"
-              onClick={() => navigate('/signup')}
+              onClick={() => scrollToSection('#pricing')}
               className="bg-gradient-to-r from-primary to-purple-dark hover:opacity-90 text-primary-foreground font-semibold px-12 py-7 text-lg shadow-2xl shadow-primary/30 hover:shadow-primary/40 transition-all group dark:shadow-primary/50"
             >
               Start Free
