@@ -10,7 +10,7 @@ import { getUserStorageKey } from '@/lib/userStorage';
 export function WeeklyProgress() {
     const { user } = useAuth();
     const { analytics, getWeeklyData } = useAnalyticsSupabase(user?.id);
-    const { activeChallenges } = useGoalsSupabase(user?.id);
+    const { activeChallenges, checkIns } = useGoalsSupabase(user?.id);
     const weeklyData = getWeeklyData();
 
     const [quarterlyCompletions, setQuarterlyCompletions] = useState<Record<string, string | null>>({});
@@ -49,7 +49,7 @@ export function WeeklyProgress() {
     const activeDays = weeklyData.filter(d => d.focusMinutes > 0 || d.tasksCompleted > 0 || d.habitsCompleted > 0).length;
 
     // Get the last 7 dates in YYYY-MM-DD format, aligned with weeklyData
-    const last7DaysStrings = [];
+    const last7DaysStrings: string[] = [];
     for (let i = 0; i < 7; i++) {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i)); // From 6 days ago to today
@@ -61,8 +61,10 @@ export function WeeklyProgress() {
         date && last7DaysStrings.includes(date)
     ).length;
 
-    // Count active challenges (useGoalsSupabase stores checkIns separately)
-    const challengeCheckInsTotal = activeChallenges?.length || 0;
+    // Count challenge check-ins this week from Supabase data
+    const challengeCheckInsTotal = checkIns?.filter(c =>
+        last7DaysStrings.includes(c.check_in_date)
+    ).length || 0;
 
     // Map daily data for the chart
     const chartData = weeklyData.map((d, idx) => {
@@ -71,8 +73,8 @@ export function WeeklyProgress() {
         // Count quarterly completions on this specific day
         const quarterlyForDay = Object.values(quarterlyCompletions).filter(date => date === dateStr).length;
 
-        // Count active challenges for display (checkIns not available on challenge objects)
-        const challengesForDay = 0; // Will show as bar only if we have actual daily check-in data
+        // Count challenge check-ins on this specific day from Supabase data
+        const challengesForDay = checkIns?.filter(c => c.check_in_date === dateStr).length || 0;
 
         return {
             ...d,

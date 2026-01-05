@@ -470,6 +470,7 @@ export function useGoalsSupabase(userId?: string) {
         challenges,
         activeChallenges,
         completedChallenges,
+        checkIns, // Expose check-ins for chart usage
         badges,
         earnedBadges,
         unearnedBadges,
