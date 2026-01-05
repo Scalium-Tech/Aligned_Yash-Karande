@@ -580,11 +580,35 @@ export function useAnalyticsSupabase(userId?: string) {
     }, [dailyActivities, calculateStreak]);
 
     // Save weekly analytics cache
-    const saveWeeklyAnalytics = useCallback(async (aiSummary: string, productivityScore: number) => {
+    // Accepts optional stats overrides for when dailyActivities may be empty
+    const saveWeeklyAnalytics = useCallback(async (
+        aiSummary: string,
+        productivityScore: number,
+        stats?: {
+            totalChallenges?: number;
+            totalQuarterly?: number;
+            activeDays?: number;
+            totalFocusMins?: number;
+            totalTasks?: number;
+            totalHabits?: number;
+            dayStreak?: number;
+        }
+    ) => {
         if (!userId) return;
 
         const weekStart = getWeekStart();
         const insights = getWeeklyInsights();
+
+        // Use provided stats if available, otherwise fall back to insights from dailyActivities
+        const finalStats = {
+            totalChallenges: stats?.totalChallenges ?? insights.totalChallenges,
+            totalQuarterly: stats?.totalQuarterly ?? insights.totalQuarterly,
+            activeDays: stats?.activeDays ?? insights.activeDays,
+            totalFocusMins: stats?.totalFocusMins ?? insights.totalFocusMins,
+            totalTasks: stats?.totalTasks ?? insights.totalTasks,
+            totalHabits: stats?.totalHabits ?? insights.totalHabits,
+            dayStreak: stats?.dayStreak ?? insights.dayStreak,
+        };
 
         try {
             await supabase.from('weekly_analytics').upsert({
@@ -592,13 +616,13 @@ export function useAnalyticsSupabase(userId?: string) {
                 week_start: weekStart,
                 ai_summary: aiSummary,
                 productivity_score: productivityScore,
-                total_challenges: insights.totalChallenges,
-                total_quarterly: insights.totalQuarterly,
-                active_days: insights.activeDays,
-                total_focus_mins: insights.totalFocusMins,
-                total_tasks: insights.totalTasks,
-                total_habits: insights.totalHabits,
-                day_streak: insights.dayStreak,
+                total_challenges: finalStats.totalChallenges,
+                total_quarterly: finalStats.totalQuarterly,
+                active_days: finalStats.activeDays,
+                total_focus_mins: finalStats.totalFocusMins,
+                total_tasks: finalStats.totalTasks,
+                total_habits: finalStats.totalHabits,
+                day_streak: finalStats.dayStreak,
             }, { onConflict: 'user_id,week_start' });
 
             // Refresh weekly data

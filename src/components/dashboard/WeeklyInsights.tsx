@@ -184,29 +184,59 @@ Be encouraging but honest. Mention specific achievements in goals or challenges 
             if (response.ok) {
                 const data = await response.json();
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+                // Build stats object from calculated values
+                const weeklyStats = {
+                    totalChallenges: challengeCheckIns,
+                    totalQuarterly: quarterlyProgress,
+                    activeDays,
+                    totalFocusMins: totalFocusMinutes,
+                    totalTasks,
+                    totalHabits,
+                    dayStreak: analytics.currentStreak,
+                };
                 if (text) {
                     setAiSummary(text);
-                    // Save AI summary to Supabase weekly_analytics
-                    await saveWeeklyAnalytics(text, productivityScore);
+                    // Save AI summary to Supabase weekly_analytics with actual stats
+                    await saveWeeklyAnalytics(text, productivityScore, weeklyStats);
                     console.log('Generated AI weekly summary:', text);
                 } else {
                     const fallback = generateFallback();
                     setAiSummary(fallback);
-                    await saveWeeklyAnalytics(fallback, productivityScore);
+                    await saveWeeklyAnalytics(fallback, productivityScore, weeklyStats);
                 }
             } else {
                 console.error('Gemini API error:', response.status);
                 const fallback = generateFallback();
                 setAiSummary(fallback);
+                // Build stats object
+                const weeklyStats = {
+                    totalChallenges: challengeCheckIns,
+                    totalQuarterly: quarterlyProgress,
+                    activeDays,
+                    totalFocusMins: totalFocusMinutes,
+                    totalTasks,
+                    totalHabits,
+                    dayStreak: analytics.currentStreak,
+                };
                 // Save fallback summary to Supabase
-                await saveWeeklyAnalytics(fallback, productivityScore);
+                await saveWeeklyAnalytics(fallback, productivityScore, weeklyStats);
             }
         } catch (error) {
             console.error('Error generating summary:', error);
             const fallback = generateFallback();
             setAiSummary(fallback);
+            // Build stats object
+            const weeklyStats = {
+                totalChallenges: challengeCheckIns,
+                totalQuarterly: quarterlyProgress,
+                activeDays,
+                totalFocusMins: totalFocusMinutes,
+                totalTasks,
+                totalHabits,
+                dayStreak: analytics.currentStreak,
+            };
             // Save fallback summary to Supabase
-            await saveWeeklyAnalytics(fallback, productivityScore);
+            await saveWeeklyAnalytics(fallback, productivityScore, weeklyStats);
         } finally {
             setIsLoading(false);
         }
