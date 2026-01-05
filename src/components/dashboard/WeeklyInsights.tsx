@@ -7,7 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAnalyticsSupabase } from '@/hooks/useAnalyticsSupabase';
 import { useJournal } from '@/hooks/useJournal';
-import { useGoals } from '@/hooks/useGoals';
+import { useGoalsSupabase } from '@/hooks/useGoalsSupabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserStorageKey } from '@/lib/userStorage';
 
@@ -22,7 +22,7 @@ export function WeeklyInsights() {
     const { user } = useAuth();
     const { analytics, getWeeklyData } = useAnalyticsSupabase(user?.id);
     const { getWeeklySummary, getRecentEntries } = useJournal(user?.id);
-    const { getActiveChallenges } = useGoals(user?.id);
+    const { activeChallenges } = useGoalsSupabase(user?.id);
 
     const [aiSummary, setAiSummary] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +32,6 @@ export function WeeklyInsights() {
     const weeklyData = getWeeklyData();
     const journalSummary = getWeeklySummary();
     const recentEntries = getRecentEntries(7);
-    const activeChallenges = getActiveChallenges();
 
     // Listen for analytics updates to refresh data
     useEffect(() => {
