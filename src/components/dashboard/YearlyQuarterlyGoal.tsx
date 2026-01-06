@@ -6,10 +6,17 @@ import { useAnalyticsSupabase } from '@/hooks/useAnalyticsSupabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { getUserStorageKey } from '@/lib/userStorage';
 
+interface DayActivity {
+    day: string;
+    activity?: string; // Legacy format
+    task?: string;     // New format - task title
+    description?: string; // New format - detailed description
+}
+
 interface WeeklyPlanItem {
     week: string;
     focus: string;
-    days?: { day: string; activity: string }[];
+    days?: DayActivity[];
 }
 
 interface QuarterlyGoal {
@@ -416,16 +423,18 @@ export function YearlyQuarterlyGoal({ yearlyGoalTitle, quarterlyGoals, yourWhyDe
                                         <div className="grid grid-cols-7 gap-2">
                                             {week.days?.map((day, dayIdx) => {
                                                 const isDone = completedActivities[`${selectedQuarterPlan.quarter}-${week.week}-${day.day}`];
+                                                const displayText = day.task || day.activity || 'No task';
                                                 return (
                                                     <button
                                                         key={dayIdx}
                                                         onClick={() => toggleActivity(selectedQuarterPlan.quarter, week.week, day.day)}
                                                         className="text-center group transition-transform active:scale-95"
+                                                        title={day.description || displayText}
                                                     >
                                                         <div className={`text-xs font-semibold mb-1 ${isDone ? 'text-primary' : 'text-muted-foreground group-hover:text-primary transition-colors'}`}>
                                                             {day.day}
                                                         </div>
-                                                        <div className={`text-[10px] rounded-lg p-2 h-20 flex flex-col items-center justify-center gap-1 border transition-all ${isDone
+                                                        <div className={`text-[10px] rounded-lg p-2 h-24 flex flex-col items-center justify-center gap-1 border transition-all ${isDone
                                                             ? 'bg-primary/10 border-primary/30 text-foreground'
                                                             : 'bg-background/50 border-border/50 text-muted-foreground group-hover:border-primary/20'
                                                             }`}>
@@ -434,7 +443,7 @@ export function YearlyQuarterlyGoal({ yearlyGoalTitle, quarterlyGoals, yourWhyDe
                                                             ) : (
                                                                 <Circle className="w-4 h-4 text-muted-foreground/30 shrink-0 group-hover:text-primary/30" />
                                                             )}
-                                                            <span className="leading-tight text-center">{day.activity}</span>
+                                                            <span className="leading-tight text-center font-medium line-clamp-3">{displayText}</span>
                                                         </div>
                                                     </button>
                                                 );

@@ -22,9 +22,9 @@ serve(async (req) => {
     const { userIdentity } = await req.json();
     console.log('Received user identity data:', JSON.stringify(userIdentity, null, 2));
 
-    const prompt = `You are a personal growth coach AI for "Aligned — Your All-In-One Personal OS." 
+    const prompt = `You are an EXPERT career mentor and personal growth coach AI for "Aligned — Your All-In-One Personal OS."
 
-CRITICAL: Analyze the user's ACTUAL responses below and generate PERSONALIZED content based on THEIR specific words, goals, and context. Do NOT use generic templates.
+CRITICAL MISSION: Generate a REALISTIC, CAREER-AWARE, ACTIONABLE yearly and quarterly execution plan that feels like it was created by a real mentor in the user's field.
 
 === USER'S ACTUAL ONBOARDING RESPONSES ===
 - Identity Statement: "${userIdentity.identity_statement || 'Not provided'}"
@@ -38,11 +38,21 @@ CRITICAL: Analyze the user's ACTUAL responses below and generate PERSONALIZED co
 - Health Focus: "${userIdentity.health_focus || 'Not provided'}"
 - Friction Triggers: "${userIdentity.friction_triggers || 'Not provided'}"
 
-=== GENERATION INSTRUCTIONS ===
-Based on the user's ACTUAL responses above, create a fully personalized dashboard. Every field must directly reflect what the user wrote.
+=== STRICT PLANNING RULES ===
+1. Classify the goal type: career, skill-based, academic, health, or personal development
+2. Each quarter MUST have a DIFFERENT focus building progressively toward the yearly goal
+3. Each week within a quarter MUST have a DIFFERENT focus theme
+4. Each day (Mon-Sun) MUST have a UNIQUE, SPECIFIC, actionable task
+5. NEVER use vague phrases like "research", "watch tutorials", "practice basics"
+6. ALWAYS specify WHAT to do, WHERE (platform/resource), and WHY it matters
 
-Generate a JSON response with this exact structure:
+=== EXAMPLE OF QUALITY DAILY TASKS ===
+❌ BAD: "Research materials", "Watch tutorials", "Practice skills"
+✅ GOOD: "Study the official certification syllabus from [official source] and create a 12-week study schedule"
+✅ GOOD: "Complete Module 1 of [specific course] on [platform], take notes on [specific topic]"
+✅ GOOD: "Build a simple [specific project type] using [specific technology] to practice [specific skill]"
 
+=== GENERATE JSON RESPONSE ===
 {
   "identities": [
     {"name": "First identity derived from their identity_statement", "icon": "user", "selected": false},
@@ -51,12 +61,97 @@ Generate a JSON response with this exact structure:
   ],
   "identity_summary": "A 1-sentence summary explaining who they are becoming based on their identity_statement",
   "my_why": "Condensed version of their purpose_why in max 8 words",
-  "yearly_goal_title": "Their yearly_goal rewritten as a clear, actionable title",
+  "yearly_goal_title": "Their yearly_goal rewritten as a clear, measurable, actionable title",
   "quarterly_goals": [
-    {"quarter": "Q1", "goal": "First quarter milestone toward their yearly_goal"},
-    {"quarter": "Q2", "goal": "Second quarter milestone building on Q1"},
-    {"quarter": "Q3", "goal": "Third quarter milestone advancing toward goal"},
-    {"quarter": "Q4", "goal": "Final quarter milestone to achieve yearly_goal"}
+    {
+      "quarter": "Q1",
+      "goal": "SPECIFIC Q1 milestone (foundation phase) - what exactly will be achieved",
+      "weeklyPlan": [
+        {
+          "week": "Week 1",
+          "focus": "SPECIFIC weekly theme for week 1",
+          "days": [
+            {"day": "Mon", "task": "Specific task title", "description": "Detailed description: what exactly to do, where to find resources, expected outcome"},
+            {"day": "Tue", "task": "Different specific task", "description": "Different detailed action with clear deliverable"},
+            {"day": "Wed", "task": "Different specific task", "description": "Different detailed action with clear deliverable"},
+            {"day": "Thu", "task": "Different specific task", "description": "Different detailed action with clear deliverable"},
+            {"day": "Fri", "task": "Different specific task", "description": "Different detailed action with clear deliverable"},
+            {"day": "Sat", "task": "Application/practice task", "description": "Apply the week's learning in a practical way"},
+            {"day": "Sun", "task": "Reflection & planning", "description": "Review week's progress, journal learnings, plan next week"}
+          ]
+        },
+        {
+          "week": "Week 2",
+          "focus": "DIFFERENT weekly theme building on week 1",
+          "days": [
+            {"day": "Mon", "task": "New specific task", "description": "Detailed description different from week 1"},
+            {"day": "Tue", "task": "New specific task", "description": "Detailed description different from week 1"},
+            {"day": "Wed", "task": "New specific task", "description": "Detailed description different from week 1"},
+            {"day": "Thu", "task": "New specific task", "description": "Detailed description different from week 1"},
+            {"day": "Fri", "task": "New specific task", "description": "Detailed description different from week 1"},
+            {"day": "Sat", "task": "Application/practice task", "description": "Apply the week's learning"},
+            {"day": "Sun", "task": "Reflection & planning", "description": "Review and plan"}
+          ]
+        }
+      ]
+    },
+    {
+      "quarter": "Q2",
+      "goal": "SPECIFIC Q2 milestone (building phase) - different from Q1, advancing toward yearly goal",
+      "weeklyPlan": [
+        {
+          "week": "Week 14",
+          "focus": "SPECIFIC weekly theme for first week of Q2",
+          "days": [
+            {"day": "Mon", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Tue", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Wed", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Thu", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Fri", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Sat", "task": "Application task", "description": "Apply learning"},
+            {"day": "Sun", "task": "Reflection", "description": "Review and plan"}
+          ]
+        }
+      ]
+    },
+    {
+      "quarter": "Q3",
+      "goal": "SPECIFIC Q3 milestone (advancing phase) - building on Q1+Q2 progress",
+      "weeklyPlan": [
+        {
+          "week": "Week 27",
+          "focus": "SPECIFIC weekly theme for first week of Q3",
+          "days": [
+            {"day": "Mon", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Tue", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Wed", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Thu", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Fri", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Sat", "task": "Application task", "description": "Apply learning"},
+            {"day": "Sun", "task": "Reflection", "description": "Review and plan"}
+          ]
+        }
+      ]
+    },
+    {
+      "quarter": "Q4",
+      "goal": "SPECIFIC Q4 milestone (completion phase) - achieving the yearly goal",
+      "weeklyPlan": [
+        {
+          "week": "Week 40",
+          "focus": "SPECIFIC weekly theme for first week of Q4",
+          "days": [
+            {"day": "Mon", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Tue", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Wed", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Thu", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Fri", "task": "Specific task", "description": "Detailed description"},
+            {"day": "Sat", "task": "Application task", "description": "Apply learning"},
+            {"day": "Sun", "task": "Reflection", "description": "Review and plan"}
+          ]
+        }
+      ]
+    }
   ],
   "your_why_detail": "1-2 sentence expansion of their purpose_why with emotional resonance",
   "daily_non_negotiables": [
@@ -66,13 +161,13 @@ Generate a JSON response with this exact structure:
     {"name": "Self-care from their self_care_practice", "icon": "heart"}
   ],
   "weekly_plan": [
-    {"day": "Mon", "activity": "Monday focus based on their goals and habits"},
-    {"day": "Tue", "activity": "Tuesday focus activity"},
-    {"day": "Wed", "activity": "Wednesday focus activity"},
-    {"day": "Thu", "activity": "Thursday focus activity"},
-    {"day": "Fri", "activity": "Friday focus activity"},
-    {"day": "Sat", "activity": "Weekend activity for rest/reflection"},
-    {"day": "Sun", "activity": "Sunday prep or rest activity"}
+    {"day": "Mon", "activity": "Focused deep work on primary goal (2-3 hours)"},
+    {"day": "Tue", "activity": "Skill building session with measurable output"},
+    {"day": "Wed", "activity": "Mid-week progress check, practice session"},
+    {"day": "Thu", "activity": "Network/community engagement or mentorship"},
+    {"day": "Fri", "activity": "Project work and weekly milestone completion"},
+    {"day": "Sat", "activity": "Rest, social activities, light review"},
+    {"day": "Sun", "activity": "Weekly reflection, planning next week's priorities"}
   ],
   "habits": [
     {"name": "Primary habit from habits_focus", "current": 0, "target": 4, "unit": "days"},
@@ -94,13 +189,14 @@ Generate a JSON response with this exact structure:
   ]
 }
 
-IMPORTANT RULES:
-1. Every field MUST be derived from the user's actual responses - no generic content
-2. Use their exact words and phrases where possible
-3. If a field was "Not provided", make a reasonable inference from related fields
-4. For icons, use only: user, briefcase, target, graduation-cap, edit-3, moon, droplet, activity, heart, book, dumbbell
-5. focus_duration_minutes must be a number (extract from their daily_time_capacity text, default to 45)
-6. Return ONLY valid JSON, no markdown or extra text`;
+=== CRITICAL QUALITY REQUIREMENTS ===
+1. Generate AT LEAST 4 weeks of detailed plans for EACH quarter (not just 2)
+2. Every daily task MUST be different and progress logically
+3. Include real-world resources, platforms, or tools relevant to their goal
+4. Tasks should feel like advice from a real mentor in that specific field
+5. For icons, use only: user, briefcase, target, graduation-cap, edit-3, moon, droplet, activity, heart, book, dumbbell
+6. focus_duration_minutes must be a number (extract from their daily_time_capacity text, default to 45)
+7. Return ONLY valid JSON, no markdown or extra text`;
 
     console.log('Calling Google Gemini API...');
 
@@ -119,7 +215,7 @@ IMPORTANT RULES:
           ],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 2048,
+            maxOutputTokens: 8192,
           }
         }),
       }
