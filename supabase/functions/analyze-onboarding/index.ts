@@ -101,7 +101,7 @@ CRITICAL MISSION: Generate a REALISTIC, CAREER-AWARE, ACTIONABLE yearly and quar
       "weeklyPlan": [
         {
           "week": "Week 14",
-          "focus": "SPECIFIC weekly theme for first week of Q2",
+          "focus": "SPECIFIC weekly theme for week 14",
           "days": [
             {"day": "Mon", "task": "Specific task", "description": "Detailed description"},
             {"day": "Tue", "task": "Specific task", "description": "Detailed description"},
@@ -111,7 +111,19 @@ CRITICAL MISSION: Generate a REALISTIC, CAREER-AWARE, ACTIONABLE yearly and quar
             {"day": "Sat", "task": "Application task", "description": "Apply learning"},
             {"day": "Sun", "task": "Reflection", "description": "Review and plan"}
           ]
-        }
+        },
+        {"week": "Week 15", "focus": "Week 15 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 16", "focus": "Week 16 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 17", "focus": "Week 17 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 18", "focus": "Week 18 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 19", "focus": "Week 19 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 20", "focus": "Week 20 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 21", "focus": "Week 21 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 22", "focus": "Week 22 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 23", "focus": "Week 23 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 24", "focus": "Week 24 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 25", "focus": "Week 25 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 26", "focus": "Week 26 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]}
       ]
     },
     {
@@ -120,7 +132,7 @@ CRITICAL MISSION: Generate a REALISTIC, CAREER-AWARE, ACTIONABLE yearly and quar
       "weeklyPlan": [
         {
           "week": "Week 27",
-          "focus": "SPECIFIC weekly theme for first week of Q3",
+          "focus": "SPECIFIC weekly theme for week 27",
           "days": [
             {"day": "Mon", "task": "Specific task", "description": "Detailed description"},
             {"day": "Tue", "task": "Specific task", "description": "Detailed description"},
@@ -130,7 +142,19 @@ CRITICAL MISSION: Generate a REALISTIC, CAREER-AWARE, ACTIONABLE yearly and quar
             {"day": "Sat", "task": "Application task", "description": "Apply learning"},
             {"day": "Sun", "task": "Reflection", "description": "Review and plan"}
           ]
-        }
+        },
+        {"week": "Week 28", "focus": "Week 28 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 29", "focus": "Week 29 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 30", "focus": "Week 30 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 31", "focus": "Week 31 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 32", "focus": "Week 32 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 33", "focus": "Week 33 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 34", "focus": "Week 34 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 35", "focus": "Week 35 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 36", "focus": "Week 36 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 37", "focus": "Week 37 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 38", "focus": "Week 38 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 39", "focus": "Week 39 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]}
       ]
     },
     {
@@ -139,7 +163,7 @@ CRITICAL MISSION: Generate a REALISTIC, CAREER-AWARE, ACTIONABLE yearly and quar
       "weeklyPlan": [
         {
           "week": "Week 40",
-          "focus": "SPECIFIC weekly theme for first week of Q4",
+          "focus": "SPECIFIC weekly theme for week 40",
           "days": [
             {"day": "Mon", "task": "Specific task", "description": "Detailed description"},
             {"day": "Tue", "task": "Specific task", "description": "Detailed description"},
@@ -149,7 +173,19 @@ CRITICAL MISSION: Generate a REALISTIC, CAREER-AWARE, ACTIONABLE yearly and quar
             {"day": "Sat", "task": "Application task", "description": "Apply learning"},
             {"day": "Sun", "task": "Reflection", "description": "Review and plan"}
           ]
-        }
+        },
+        {"week": "Week 41", "focus": "Week 41 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 42", "focus": "Week 42 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 43", "focus": "Week 43 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 44", "focus": "Week 44 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 45", "focus": "Week 45 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 46", "focus": "Week 46 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 47", "focus": "Week 47 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 48", "focus": "Week 48 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 49", "focus": "Week 49 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 50", "focus": "Week 50 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 51", "focus": "Week 51 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
+        {"week": "Week 52", "focus": "Week 52 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]}
       ]
     }
   ],
@@ -190,13 +226,18 @@ CRITICAL MISSION: Generate a REALISTIC, CAREER-AWARE, ACTIONABLE yearly and quar
 }
 
 === CRITICAL QUALITY REQUIREMENTS ===
-1. Generate AT LEAST 4 weeks of detailed plans for EACH quarter (not just 2)
-2. Every daily task MUST be different and progress logically
+1. Generate ALL 13 weeks of detailed plans for EACH quarter:
+   - Q1: Week 1 through Week 13 (foundation phase)
+   - Q2: Week 14 through Week 26 (building phase)
+   - Q3: Week 27 through Week 39 (advancing phase)
+   - Q4: Week 40 through Week 52 (completion phase)
+2. Every daily task MUST be different and progress logically throughout the quarter
 3. Include real-world resources, platforms, or tools relevant to their goal
 4. Tasks should feel like advice from a real mentor in that specific field
-5. For icons, use only: user, briefcase, target, graduation-cap, edit-3, moon, droplet, activity, heart, book, dumbbell
-6. focus_duration_minutes must be a number (extract from their daily_time_capacity text, default to 45)
-7. Return ONLY valid JSON, no markdown or extra text`;
+5. Each week must have a unique focus theme that builds on the previous week
+6. For icons, use only: user, briefcase, target, graduation-cap, edit-3, moon, droplet, activity, heart, book, dumbbell
+7. focus_duration_minutes must be a number (extract from their daily_time_capacity text, default to 45)
+8. Return ONLY valid JSON, no markdown or extra text`;
 
     console.log('Calling Google Gemini API...');
 
@@ -215,7 +256,7 @@ CRITICAL MISSION: Generate a REALISTIC, CAREER-AWARE, ACTIONABLE yearly and quar
           ],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 8192,
+            maxOutputTokens: 32768,
           }
         }),
       }

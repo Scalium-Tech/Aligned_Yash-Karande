@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Check, Sparkles, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { initiatePayment } from '@/lib/razorpay';
+import { initiatePayment, clearPendingPayment } from '@/lib/razorpay';
 import { useAuth } from '@/contexts/AuthContext';
 
 const freePlan = {
@@ -170,7 +170,10 @@ export function PricingSection() {
               </ul>
 
               <Button
-                onClick={() => navigate('/signup')}
+                onClick={() => {
+                  clearPendingPayment(); // Clear any stale Pro payment data
+                  navigate('/signup');
+                }}
                 className="w-full py-6 font-semibold glass-card border-border/50 text-foreground hover:bg-card hover:border-primary/30 dark:hover:border-primary/40"
                 variant="outline"
               >

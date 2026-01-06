@@ -102,7 +102,21 @@ export function useDailyHabits(userId?: string) {
 
                 setHabits(newHabits || []);
             } else {
-                setHabits(habitsData);
+                // Check if health objectives exist, if not create defaults
+                const hasHealthObjectives = habitsData.some(h => h.type === 'health_objective');
+                if (!hasHealthObjectives) {
+                    console.log('No health objectives found, creating defaults');
+                    await createHealthObjectives(userId);
+                    // Re-fetch to include new health objectives
+                    const { data: refreshedHabits } = await supabase
+                        .from('daily_habits')
+                        .select('*')
+                        .eq('user_id', userId)
+                        .order('sort_order', { ascending: true });
+                    setHabits(refreshedHabits || []);
+                } else {
+                    setHabits(habitsData);
+                }
             }
 
             setCompletions(completionsData || []);
@@ -173,19 +187,94 @@ export function useDailyHabits(userId?: string) {
         return false;
     };
 
-    // Create default habits for new users
+    // Create default habits for new users (personalized from their onboarding)
     const createDefaultHabits = async (uid: string): Promise<void> => {
         const habitsToInsert: Array<Omit<DailyHabit, 'id' | 'created_at' | 'updated_at' | 'completed'>> = [];
 
-        defaultNonNegotiables.forEach((habit) => {
-            habitsToInsert.push({
-                user_id: uid,
-                type: 'non_negotiable',
-                text: habit.text,
-                sort_order: habit.sort_order,
-            });
+        // Try to fetch user's identity for personalization
+        let userIdentity: {
+            habits_focus?: string;
+            health_focus?: string;
+            self_care_practice?: string;
+            body_care?: string;
+            sleep_definition?: string;
+        } | null = null;
+
+        try {
+            const { data, error } = await supabase
+                .from('user_identity')
+                .select('habits_focus, health_focus, self_care_practice, body_care, sleep_definition')
+                .eq('id', uid)
+                .single();
+
+            if (!error && data) {
+                userIdentity = data;
+            }
+        } catch (err) {
+            console.log('Could not fetch user identity for personalization, using defaults');
+        }
+
+        let orderIndex = 0;
+
+        // 1. Add foundation habits from Step 5 if they exist
+        const foundationHabits = [
+            { text: userIdentity?.sleep_definition, prefix: 'Sleep: ' },
+            { text: userIdentity?.body_care, prefix: 'Body Care: ' },
+            { text: userIdentity?.self_care_practice, prefix: 'Self-Care: ' }
+        ];
+
+        foundationHabits.forEach(h => {
+            if (h.text && h.text.trim().length > 0) {
+                // If the text is very long, truncate it
+                const habitText = h.text.length > 50
+                    ? h.prefix + h.text.substring(0, 47) + '...'
+                    : h.prefix + h.text;
+
+                habitsToInsert.push({
+                    user_id: uid,
+                    type: 'non_negotiable',
+                    text: habitText,
+                    sort_order: orderIndex++,
+                });
+            }
         });
 
+        // 2. Add habits from habits_focus (Step 6)
+        if (userIdentity?.habits_focus) {
+            // Robust parsing for habits focus (handles commas, semicolons, bullets, newlines, etc.)
+            const parsedHabits = userIdentity.habits_focus
+                .split(/[,\n\r;•\-\*]/)
+                .map(h => h.trim())
+                .filter(h => h.length > 2) // Exclude very short strings
+                .slice(0, 5); // Max 5 from this field
+
+            parsedHabits.forEach((habit) => {
+                habitsToInsert.push({
+                    user_id: uid,
+                    type: 'non_negotiable',
+                    text: habit,
+                    sort_order: orderIndex++,
+                });
+            });
+        }
+
+        // 3. Fallback to defaults ONLY if we have fewer than 3 habits
+        if (habitsToInsert.length < 3) {
+            const needed = 4 - habitsToInsert.length;
+            defaultNonNegotiables.slice(0, needed).forEach((habit) => {
+                // Avoid adding a default if a similar text already exists
+                if (!habitsToInsert.some(h => h.text.toLowerCase().includes(habit.text.toLowerCase().substring(0, 10)))) {
+                    habitsToInsert.push({
+                        user_id: uid,
+                        type: 'non_negotiable',
+                        text: habit.text,
+                        sort_order: orderIndex++,
+                    });
+                }
+            });
+        }
+
+        // 4. Add default health objectives (will be personalized by AI later)
         defaultHealthObjectives.forEach((obj) => {
             habitsToInsert.push({
                 user_id: uid,
@@ -201,9 +290,30 @@ export function useDailyHabits(userId?: string) {
         try {
             const { error } = await supabase.from('daily_habits').insert(habitsToInsert);
             if (error) throw error;
-            console.log('Created default habits for new user');
+            console.log(`Created ${habitsToInsert.length} habits for user ${uid}`);
         } catch (err) {
             console.error('Error creating default habits:', err);
+        }
+    };
+
+    // Create health objectives for users who don't have them
+    const createHealthObjectives = async (uid: string): Promise<void> => {
+        const healthToInsert = defaultHealthObjectives.map((obj) => ({
+            user_id: uid,
+            type: 'health_objective' as const,
+            text: obj.text,
+            icon: obj.icon,
+            target_value: obj.target_value,
+            personalized_tip: obj.personalized_tip,
+            sort_order: obj.sort_order,
+        }));
+
+        try {
+            const { error } = await supabase.from('daily_habits').insert(healthToInsert);
+            if (error) throw error;
+            console.log('Created default health objectives for user');
+        } catch (err) {
+            console.error('Error creating health objectives:', err);
         }
     };
 

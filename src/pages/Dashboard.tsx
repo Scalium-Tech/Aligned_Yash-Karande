@@ -101,10 +101,8 @@ export default function Dashboard() {
   }, [user, profile, loading, navigate]);
 
   const handleLogout = async () => {
-    const isPro = profile?.is_pro;
     await signOut();
-    // Redirect free users to pricing, pro users to login
-    navigate(isPro ? '/login' : '/#pricing');
+    navigate('/');
   };
 
   if (loading) {

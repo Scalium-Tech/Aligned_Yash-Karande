@@ -13,6 +13,19 @@ export function ProFeatureGate({ children, featureName = 'this feature' }: ProFe
     const { profile } = useAuth();
     const navigate = useNavigate();
 
+    const handleUpgradeClick = (e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+        // Navigate to landing page with pricing section
+        navigate('/');
+        // Scroll to pricing section after navigation
+        setTimeout(() => {
+            const pricingSection = document.getElementById('pricing');
+            if (pricingSection) {
+                pricingSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, 100);
+    };
+
     // If user is Pro, show content normally
     if (profile?.is_pro) {
         return <>{children}</>;
@@ -29,7 +42,7 @@ export function ProFeatureGate({ children, featureName = 'this feature' }: ProFe
             {/* Lock overlay */}
             <div
                 className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-[2px] rounded-2xl cursor-pointer z-10"
-                onClick={() => window.location.href = '/#pricing'}
+                onClick={handleUpgradeClick}
             >
                 <div className="flex flex-col items-center gap-3 p-6 text-center">
                     <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -41,10 +54,7 @@ export function ProFeatureGate({ children, featureName = 'this feature' }: ProFe
                     <Button
                         size="sm"
                         className="bg-gradient-to-r from-primary to-purple-dark hover:opacity-90 text-primary-foreground shadow-lg"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            window.location.href = '/#pricing';
-                        }}
+                        onClick={handleUpgradeClick}
                     >
                         <Crown className="w-4 h-4 mr-2" />
                         Upgrade to Pro

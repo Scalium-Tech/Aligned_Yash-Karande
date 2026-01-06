@@ -60,20 +60,22 @@ export function DailyHabitsSection() {
                 try {
                     const { data: userIdentity, error } = await supabase
                         .from('user_identity')
-                        .select('habits_focus, health_focus')
+                        .select('health_focus')
                         .eq('id', user.id)
                         .single();
 
                     if (!error && userIdentity) {
-                        // Personalize Health Objectives
-                        if (!healthPersonalized && userIdentity.health_focus) {
-                            await generateHealthObjectives(userIdentity.health_focus);
-                            localStorage.setItem(healthPersonalizedKey, 'true');
+                        // Mark habits as personalized (useDailyHabits already handles initial creation)
+                        if (!habitPersonalized) {
+                            localStorage.setItem(habitPersonalizedKey, 'true');
                         }
 
-                        // Mark habits as personalized (the migration handles this)
-                        if (!habitPersonalized && userIdentity.habits_focus) {
-                            localStorage.setItem(habitPersonalizedKey, 'true');
+                        // Personalize Health Objectives with AI if health_focus exists
+                        if (!healthPersonalized) {
+                            if (userIdentity.health_focus) {
+                                await generateHealthObjectives(userIdentity.health_focus);
+                            }
+                            localStorage.setItem(healthPersonalizedKey, 'true');
                         }
                     }
                 } catch (err) {
@@ -84,6 +86,8 @@ export function DailyHabitsSection() {
 
         initializePersonalization();
     }, [user?.id]);
+
+
 
     const generateHealthObjectives = async (healthFocus: string) => {
         const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;

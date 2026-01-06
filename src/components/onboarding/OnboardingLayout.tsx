@@ -9,12 +9,12 @@ interface OnboardingLayoutProps {
   subtitle?: string;
 }
 
-export function OnboardingLayout({ 
-  children, 
-  currentStep, 
-  totalSteps, 
+export function OnboardingLayout({
+  children,
+  currentStep,
+  totalSteps,
   title,
-  subtitle 
+  subtitle
 }: OnboardingLayoutProps) {
   const progress = (currentStep / totalSteps) * 100;
 
@@ -22,12 +22,11 @@ export function OnboardingLayout({
     <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background flex flex-col">
       {/* Header with Logo */}
       <header className="py-6 px-6">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-violet flex items-center justify-center shadow-lg shadow-primary/20">
-            <span className="text-primary-foreground font-bold text-lg">A</span>
-          </div>
-          <span className="font-semibold text-xl text-foreground">Aligned</span>
-        </div>
+        <img
+          src="/logo.png"
+          alt="Aligned"
+          className="h-12 w-auto"
+        />
       </header>
 
       {/* Progress Bar */}
@@ -38,7 +37,7 @@ export function OnboardingLayout({
             <span className="text-sm font-medium text-primary">{Math.round(progress)}% complete</span>
           </div>
           <div className="h-2 bg-secondary rounded-full overflow-hidden">
-            <motion.div 
+            <motion.div
               className="h-full bg-gradient-to-r from-primary to-violet rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
@@ -50,7 +49,7 @@ export function OnboardingLayout({
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 pb-12">
-        <motion.div 
+        <motion.div
           className="w-full max-w-2xl"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -59,7 +58,7 @@ export function OnboardingLayout({
           <div className="glass-card rounded-3xl p-8 md:p-12 shadow-2xl">
             {/* Title Section */}
             <div className="text-center mb-10">
-              <motion.h1 
+              <motion.h1
                 className="text-2xl md:text-3xl font-bold text-foreground mb-3"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -68,7 +67,7 @@ export function OnboardingLayout({
                 {title}
               </motion.h1>
               {subtitle && (
-                <motion.p 
+                <motion.p
                   className="text-muted-foreground text-lg"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
