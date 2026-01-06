@@ -171,7 +171,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // This preserves user data between sessions so existing users
     // see their data immediately when they log back in.
     // Data is only cleared on NEW user sign up.
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      // Ignore errors - user may already be logged out or network issue
+      console.warn('Sign out error (ignored):', error);
+    }
     setUser(null);
     setSession(null);
     setProfile(null);

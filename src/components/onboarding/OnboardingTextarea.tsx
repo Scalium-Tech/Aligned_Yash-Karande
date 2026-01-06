@@ -1,4 +1,4 @@
-import { forwardRef } from 'react';
+import { forwardRef, useId } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -8,17 +8,23 @@ interface OnboardingTextareaProps extends React.TextareaHTMLAttributes<HTMLTextA
 }
 
 export const OnboardingTextarea = forwardRef<HTMLTextAreaElement, OnboardingTextareaProps>(
-  ({ label, helperText, className, ...props }, ref) => {
+  ({ label, helperText, className, id, name, ...props }, ref) => {
+    const generatedId = useId();
+    const textareaId = id || generatedId;
+    const textareaName = name || textareaId;
+
     return (
-      <motion.div 
+      <motion.div
         className="space-y-3"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        <label className="block text-foreground font-medium">{label}</label>
+        <label htmlFor={textareaId} className="block text-foreground font-medium">{label}</label>
         <textarea
           ref={ref}
+          id={textareaId}
+          name={textareaName}
           className={cn(
             "w-full min-h-[120px] px-5 py-4 rounded-2xl",
             "bg-background/60 border-2 border-border/50",
@@ -39,3 +45,4 @@ export const OnboardingTextarea = forwardRef<HTMLTextAreaElement, OnboardingText
 );
 
 OnboardingTextarea.displayName = 'OnboardingTextarea';
+

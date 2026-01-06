@@ -569,6 +569,7 @@ Return only JSON, no other text.`;
                                     fill="none"
                                     strokeLinecap="round"
                                     strokeDasharray={2 * Math.PI * 72}
+                                    initial={{ strokeDashoffset: 2 * Math.PI * 72 }}
                                     animate={{ strokeDashoffset: 2 * Math.PI * 72 * (1 - progress / 100) }}
                                     transition={{ duration: 0.5 }}
                                 />
