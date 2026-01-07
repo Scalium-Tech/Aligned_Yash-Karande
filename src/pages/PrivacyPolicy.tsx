@@ -38,7 +38,7 @@ const PrivacyPolicy = () => {
                 <div className="prose prose-lg max-w-none dark:prose-invert">
                   <h2 className="font-display text-2xl font-bold text-foreground mb-4">Introduction</h2>
                   <p className="text-muted-foreground mb-6">
-                    At Aligned, we take your privacy seriously. This Privacy Policy explains how we collect, 
+                    At AlignedOS, we take your privacy seriously. This Privacy Policy explains how we collect, 
                     use, disclose, and safeguard your information when you use our application and services. 
                     Please read this policy carefully to understand our practices regarding your personal data.
                   </p>

@@ -50,14 +50,22 @@ export function DailyHabitsSection() {
         const initializePersonalization = async () => {
             if (!user) return;
 
-            const habitPersonalizedKey = `aligned_habits_personalized_${user.id}`;
-            const healthPersonalizedKey = `aligned_health_personalized_user_${user.id}`;
+            try {
+                // Check Supabase for personalization status (source of truth)
+                const { data: prefs, error: prefsError } = await supabase
+                    .from('user_preferences')
+                    .select('habits_personalized, health_personalized')
+                    .eq('user_id', user.id)
+                    .maybeSingle();
 
-            const habitPersonalized = localStorage.getItem(habitPersonalizedKey);
-            const healthPersonalized = localStorage.getItem(healthPersonalizedKey);
+                if (prefsError && prefsError.code !== 'PGRST116') {
+                    console.warn('Error fetching user preferences:', prefsError);
+                }
 
-            if (!habitPersonalized || !healthPersonalized) {
-                try {
+                const habitsPersonalized = prefs?.habits_personalized ?? false;
+                const healthPersonalized = prefs?.health_personalized ?? false;
+
+                if (!habitsPersonalized || !healthPersonalized) {
                     const { data: userIdentity, error } = await supabase
                         .from('user_identity')
                         .select('health_focus')
@@ -66,8 +74,12 @@ export function DailyHabitsSection() {
 
                     if (!error && userIdentity) {
                         // Mark habits as personalized (useDailyHabits already handles initial creation)
-                        if (!habitPersonalized) {
-                            localStorage.setItem(habitPersonalizedKey, 'true');
+                        if (!habitsPersonalized) {
+                            await supabase.from('user_preferences').upsert({
+                                user_id: user.id,
+                                habits_personalized: true,
+                                updated_at: new Date().toISOString()
+                            }, { onConflict: 'user_id' });
                         }
 
                         // Personalize Health Objectives with AI if health_focus exists
@@ -75,12 +87,16 @@ export function DailyHabitsSection() {
                             if (userIdentity.health_focus) {
                                 await generateHealthObjectives(userIdentity.health_focus);
                             }
-                            localStorage.setItem(healthPersonalizedKey, 'true');
+                            await supabase.from('user_preferences').upsert({
+                                user_id: user.id,
+                                health_personalized: true,
+                                updated_at: new Date().toISOString()
+                            }, { onConflict: 'user_id' });
                         }
                     }
-                } catch (err) {
-                    console.error('Error fetching user identity:', err);
                 }
+            } catch (err) {
+                console.error('Error initializing personalization:', err);
             }
         };
 

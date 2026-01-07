@@ -39,14 +39,14 @@ export function BenefitsSection() {
         <AnimatedSection className="text-center max-w-2xl mx-auto mb-16">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 glass-card rounded-full text-sm font-medium mb-6">
             <Zap size={14} className="text-primary" />
-            Why Aligned
+            Why AlignedOS
           </span>
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-6">
             Designed for how{' '}
             <span className="bg-gradient-to-r from-primary to-purple-dark bg-clip-text text-transparent">life actually works</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            We built Aligned for people who want to grow without grinding themselves down.
+            We built AlignedOS for people who want to grow without grinding themselves down.
           </p>
         </AnimatedSection>
 

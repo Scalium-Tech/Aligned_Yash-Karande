@@ -91,7 +91,7 @@ const Careers = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatedSection className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-6">
-              Why Join Aligned?
+              Why Join AlignedOS?
             </h2>
             <p className="text-lg text-muted-foreground">
               We practice what we preach — intentional work, sustainable pace, and meaningful impact.

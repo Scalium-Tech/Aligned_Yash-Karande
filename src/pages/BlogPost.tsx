@@ -190,7 +190,7 @@ const BlogPost = () => {
                 Ready to start your intentional living journey?
               </h2>
               <p className="text-muted-foreground mb-6">
-                Join thousands who are using Aligned to align their daily actions with their deeper purpose.
+                Join thousands who are using AlignedOS to align their daily actions with their deeper purpose.
               </p>
               <Link to="/signup">
                 <Button className="bg-gradient-to-r from-primary to-purple-dark hover:opacity-90 text-primary-foreground font-medium px-8 py-6 text-lg shadow-lg shadow-primary/20">

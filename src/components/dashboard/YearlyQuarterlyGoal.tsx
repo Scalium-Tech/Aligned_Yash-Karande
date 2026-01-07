@@ -166,6 +166,39 @@ export function YearlyQuarterlyGoal({ yearlyGoalTitle, quarterlyGoals, yourWhyDe
         setExpandedQuarter(expandedQuarter === quarter ? null : quarter);
     };
 
+    // Helper: Validate that a weeklyPlan item has proper days array (not a string placeholder)
+    const hasValidDays = (week: WeeklyPlanItem): boolean => {
+        return Array.isArray(week.days) && week.days.length > 0 && typeof week.days[0]?.day === 'string';
+    };
+
+    // Helper: Check if the entire weeklyPlan is valid (has at least one week with proper days)
+    const isWeeklyPlanValid = (plan: WeeklyPlanItem[] | undefined): boolean => {
+        if (!plan || !Array.isArray(plan) || plan.length === 0) return false;
+        // Check if at least 50% of weeks have valid days (AI sometimes returns partial data)
+        const validWeeks = plan.filter(hasValidDays);
+        return validWeeks.length >= plan.length * 0.5;
+    };
+
+    // Get valid weekly plan - use AI data if valid, otherwise generate fallback
+    const getValidWeeklyPlan = (qg: QuarterlyGoal, quarterNum: number): WeeklyPlanItem[] => {
+        if (isWeeklyPlanValid(qg.weeklyPlan)) {
+            // Ensure each week has days array (fill in missing ones)
+            return qg.weeklyPlan!.map((week, idx) => {
+                if (hasValidDays(week)) {
+                    return week;
+                }
+                // Generate fallback days for this week
+                const fallbackWeek = generateWeeklyPlan(qg.goal, quarterNum)[idx % 13];
+                return {
+                    ...week,
+                    days: fallbackWeek?.days || []
+                };
+            });
+        }
+        // Fall back to fully generated plan
+        return generateWeeklyPlan(qg.goal, quarterNum);
+    };
+
     const openFullPlan = (quarter: string, goal: string, plan: WeeklyPlanItem[]) => {
         setSelectedQuarterPlan({ quarter, goal, plan });
         setShowFullPlanModal(true);
@@ -204,7 +237,7 @@ export function YearlyQuarterlyGoal({ yearlyGoalTitle, quarterlyGoals, yourWhyDe
                 <div className="space-y-2 mb-4">
                     {quarterlyGoals.map((qg, index) => {
                         const quarterNum = index + 1;
-                        const weeklyPlan = qg.weeklyPlan || generateWeeklyPlan(qg.goal, quarterNum);
+                        const weeklyPlan = getValidWeeklyPlan(qg, quarterNum);
                         const isExpanded = expandedQuarter === qg.quarter;
 
                         return (
@@ -348,7 +381,7 @@ export function YearlyQuarterlyGoal({ yearlyGoalTitle, quarterlyGoals, yourWhyDe
                                                 variant="ghost"
                                                 onClick={() => {
                                                     const quarterNum = index + 1;
-                                                    const weeklyPlan = qg.weeklyPlan || generateWeeklyPlan(qg.goal, quarterNum);
+                                                    const weeklyPlan = getValidWeeklyPlan(qg, quarterNum);
                                                     openFullPlan(qg.quarter, qg.goal, weeklyPlan);
                                                 }}
                                                 className="w-full justify-between items-center bg-secondary/10 hover:bg-amber-500 hover:text-white rounded-2xl p-4 h-auto group/btn transition-all duration-300"

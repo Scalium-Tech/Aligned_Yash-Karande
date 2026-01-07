@@ -108,7 +108,7 @@ const ShippingPolicy = () => {
                                         <div className="grid sm:grid-cols-2 gap-4 mt-6">
                                             <div className="p-4 rounded-xl glass border border-border/50 dark:border-primary/20">
                                                 <h4 className="font-semibold text-foreground mb-2">🌐 Global Availability</h4>
-                                                <p className="text-sm">Access Aligned from anywhere in the world, 24/7, through any modern web browser.</p>
+                                                <p className="text-sm">Access AlignedOS from anywhere in the world, 24/7, through any modern web browser.</p>
                                             </div>
                                             <div className="p-4 rounded-xl glass border border-border/50 dark:border-primary/20">
                                                 <h4 className="font-semibold text-foreground mb-2">📱 Cross-Platform</h4>
@@ -133,7 +133,7 @@ const ShippingPolicy = () => {
                                         <h2 className="font-display text-2xl font-bold text-foreground">No Physical Shipping</h2>
                                     </div>
                                     <p className="text-muted-foreground mb-4">
-                                        Since Aligned is a digital service:
+                                        Since AlignedOS is a digital service:
                                     </p>
                                     <ul className="space-y-3 text-muted-foreground">
                                         <li className="flex items-start gap-3">

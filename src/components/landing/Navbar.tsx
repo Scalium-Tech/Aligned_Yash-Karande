@@ -65,7 +65,7 @@ export function Navbar() {
           <Link to="/" className="flex items-center gap-2 group">
             <img
               src="/logo.png"
-              alt="Aligned"
+              alt="AlignedOS"
               className="h-14 w-auto"
             />
           </Link>

@@ -9,7 +9,7 @@ import { HelpCircle } from 'lucide-react';
 
 const faqs = [
   {
-    question: 'Is Aligned really free?',
+    question: 'Is AlignedOS really free?',
     answer: 'Yes! The free plan includes everything you need to get started with identity-based planning, daily tasks, and basic reflections. You can use it forever without paying.',
   },
   {
@@ -48,7 +48,7 @@ export function FAQsSection() {
             <span className="bg-gradient-to-r from-primary to-purple-dark bg-clip-text text-transparent">questions</span>
           </h2>
           <p className="text-lg text-muted-foreground">
-            Everything you need to know about Aligned.
+            Everything you need to know about AlignedOS.
           </p>
         </AnimatedSection>
 

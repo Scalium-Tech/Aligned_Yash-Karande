@@ -68,7 +68,7 @@ export function Footer() {
             <a href="/" className="flex items-center mb-5 group">
               <img
                 src="/logo.png"
-                alt="Aligned"
+                alt="AlignedOS"
                 className="h-12 w-auto"
               />
             </a>
@@ -171,7 +171,7 @@ export function Footer() {
 
         <div className="border-t border-border/50 dark:border-primary/10 mt-14 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} Aligned. All rights reserved.
+            © {new Date().getFullYear()} AlignedOS. All rights reserved.
           </p>
           <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
             Made with <Heart size={14} className="text-primary fill-primary animate-pulse" /> for intentional people

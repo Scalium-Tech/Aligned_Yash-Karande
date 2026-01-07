@@ -56,7 +56,7 @@ const AboutUs = () => {
               <span className="bg-gradient-to-r from-primary to-purple-dark bg-clip-text text-transparent">intentional living</span>
             </h1>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Aligned was born from a simple frustration: why do productivity tools make us feel
+              AlignedOS was born from a simple frustration: why do productivity tools make us feel
               more stressed, not less? I set out to build something different.
             </p>
           </AnimatedSection>
@@ -73,7 +73,7 @@ const AboutUs = () => {
               </h2>
               <div className="space-y-4 text-muted-foreground leading-relaxed">
                 <p>
-                  Hi, I'm <strong className="text-foreground">Yash Karande</strong>, the founder of Aligned.
+                  Hi, I'm <strong className="text-foreground">Yash Karande</strong>, the founder of AlignedOS.
                   In 2025, I was juggling multiple productivity apps, habit trackers,
                   and planners. Despite all these tools, I felt more scattered than ever.
                 </p>
@@ -82,7 +82,7 @@ const AboutUs = () => {
                   apps asked the fundamental question: <em>Who do you want to become?</em>
                 </p>
                 <p>
-                  Aligned was created to fill this gap. I built a system that starts with your
+                  AlignedOS was created to fill this gap. I built a system that starts with your
                   identity and values, then helps you take consistent action without the burnout.
                 </p>
                 <p>
@@ -161,7 +161,7 @@ const AboutUs = () => {
                 Why Choose Us
               </span>
               <h2 className="font-display text-3xl sm:text-4xl font-bold text-foreground mb-4">
-                What Makes Aligned Different
+                What Makes AlignedOS Different
               </h2>
               <p className="text-muted-foreground mb-8 leading-relaxed">
                 This isn't just another productivity app. It's built by someone who understands
@@ -190,7 +190,7 @@ const AboutUs = () => {
                   <div className="text-5xl font-serif opacity-50 mb-4">"</div>
 
                   <p className="text-lg leading-relaxed mb-6">
-                    I built Aligned because I wish I had something like this when I was struggling
+                    I built AlignedOS because I wish I had something like this when I was struggling
                     with scattered goals and endless to-do lists. Everyone deserves a calm, focused
                     system that helps them become who they want to be.
                   </p>

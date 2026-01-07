@@ -72,7 +72,7 @@ export function initiatePayment(
         key: RAZORPAY_KEY_ID,
         amount: plan.amount,
         currency: 'INR',
-        name: 'Aligned',
+        name: 'AlignedOS',
         description: plan.description,
         image: '/logo.png',
         handler: function (response: RazorpayResponse) {

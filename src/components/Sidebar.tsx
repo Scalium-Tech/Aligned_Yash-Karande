@@ -56,7 +56,7 @@ export function Sidebar({ activeSection, onSectionChange, onLogout }: SidebarPro
                 <div className="flex items-center gap-2">
                     <img
                         src="/logo.png"
-                        alt="Aligned"
+                        alt="AlignedOS"
                         className={`shrink-0 ${isCollapsed ? 'h-10 w-auto' : 'h-12 w-auto'}`}
                     />
                 </div>

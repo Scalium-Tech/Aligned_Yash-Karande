@@ -203,7 +203,7 @@ export function SettingsSection() {
                     </div>
                     <div>
                         <h3 className="font-semibold text-foreground">Appearance</h3>
-                        <p className="text-sm text-muted-foreground">Customize how Aligned looks</p>
+                        <p className="text-sm text-muted-foreground">Customize how AlignedOS looks</p>
                     </div>
                 </div>
 
@@ -448,7 +448,7 @@ export function SettingsSection() {
                 className="text-center py-4"
             >
                 <p className="text-sm text-muted-foreground">
-                    Aligned • Your Personal OS
+                    AlignedOS • Your Personal OS
                 </p>
                 <p className="text-xs text-muted-foreground/60 mt-1">
                     Version 1.0.0 • Built with ❤️

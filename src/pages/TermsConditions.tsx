@@ -38,7 +38,7 @@ const TermsConditions = () => {
                 <div className="prose prose-lg max-w-none dark:prose-invert">
                   <h2 className="font-display text-2xl font-bold text-foreground mb-4">Agreement to Terms</h2>
                   <p className="text-muted-foreground mb-6">
-                    By accessing or using Aligned, you agree to be bound by these Terms and Conditions. 
+                    By accessing or using AlignedOS, you agree to be bound by these Terms and Conditions. 
                     If you disagree with any part of these terms, you may not access the service. These 
                     Terms apply to all visitors, users, and others who access or use our service.
                   </p>
@@ -56,14 +56,14 @@ const TermsConditions = () => {
 
                   <h2 className="font-display text-2xl font-bold text-foreground mb-4 mt-8">Account Registration</h2>
                   <p className="text-muted-foreground mb-6">
-                    To use certain features of Aligned, you must register for an account. You agree to 
+                    To use certain features of AlignedOSOS, you must register for an account. You agree to 
                     provide accurate, current, and complete information during registration and to update 
                     such information to keep it accurate. You are responsible for safeguarding your password 
                     and for all activities that occur under your account.
                   </p>
 
                   <h2 className="font-display text-2xl font-bold text-foreground mb-4 mt-8">Subscription and Payments</h2>
-                  <p className="text-muted-foreground mb-4">Some features of Aligned require a paid subscription:</p>
+                  <p className="text-muted-foreground mb-4">Some features of AlignedOSOS require a paid subscription:</p>
                   <ul className="list-disc pl-6 text-muted-foreground space-y-2 mb-6">
                     <li><strong className="text-foreground">Billing:</strong> Subscriptions are billed in advance on a monthly basis.</li>
                     <li><strong className="text-foreground">Cancellation:</strong> You may cancel your subscription at any time. Cancellation takes effect at the end of the current billing period.</li>
@@ -74,7 +74,7 @@ const TermsConditions = () => {
                   <h2 className="font-display text-2xl font-bold text-foreground mb-4 mt-8">Intellectual Property</h2>
                   <p className="text-muted-foreground mb-6">
                     The service and its original content, features, and functionality are and will remain 
-                    the exclusive property of Aligned and its licensors. The service is protected by copyright, 
+                    the exclusive property of AlignedOS and its licensors. The service is protected by copyright, 
                     trademark, and other laws. Our trademarks may not be used in connection with any product 
                     or service without our prior written consent.
                   </p>

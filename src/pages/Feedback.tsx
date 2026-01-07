@@ -59,7 +59,7 @@ export default function Feedback() {
                                 Share Your Feedback
                             </h1>
                             <p className="text-muted-foreground text-lg max-w-md mx-auto">
-                                We'd love to hear about your experience with Aligned. Your feedback helps us improve!
+                                We'd love to hear about your experience with AlignedOS. Your feedback helps us improve!
                             </p>
                         </div>
 
@@ -129,7 +129,7 @@ export default function Feedback() {
                                 </Label>
                                 <Textarea
                                     id="feedback"
-                                    placeholder="Tell us about your experience with Aligned..."
+                                    placeholder="Tell us about your experience with AlignedOS..."
                                     value={formData.feedback}
                                     onChange={(e) => setFormData((prev) => ({ ...prev, feedback: e.target.value }))}
                                     required

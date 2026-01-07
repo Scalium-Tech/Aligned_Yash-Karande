@@ -7,7 +7,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Cell } from 'recharts';
 import { useFocusSessionsSupabase } from '@/hooks/useFocusSessionsSupabase';
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAnalyticsSupabase } from '@/hooks/useAnalyticsSupabase';
 import { useGoalsSupabase } from '@/hooks/useGoalsSupabase';
 import { useFocusTimer } from '@/contexts/FocusTimerContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,7 +20,9 @@ interface FocusSessionsProps {
 export function FocusSessions({ userIdentities }: FocusSessionsProps) {
     const { user } = useAuth();
     const { getTodayStats, getWeekStats, getTotals, getDayStreak, isLoading: isLoadingFocus } = useFocusSessionsSupabase(user?.id);
-    const { analytics, getWeeklyData } = useAnalytics(user?.id);
+    // Use the same analytics hook that FocusTimerContext uses for logging sessions
+    // This ensures chart data updates immediately when sessions are completed
+    const { getWeeklyData } = useAnalyticsSupabase(user?.id);
     const { challenges } = useGoalsSupabase(user?.id);
     const {
         isRunning,

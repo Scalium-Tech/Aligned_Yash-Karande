@@ -1,15 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
+import { buildInsightsPrompt, getGeminiEndpoint, buildGeminiRequestBody } from './aiPrompts';
+import {
+  validateAIInsights,
+  validateQuarterlyPlansDepth,
+  detectTruncation,
+  type AIInsights as ZodAIInsights,
+} from '@/lib/aiSchemas';
 
-// TEMP DEBUG LOG – REMOVE AFTER VERIFICATION
-console.log(
-  "Gemini key loaded:",
-  import.meta.env.VITE_GOOGLE_API_KEY?.slice(0, 6)
-);
-
-
-
-interface UserIdentity {
+// Export for use in aiPrompts.ts
+export interface UserIdentity {
   identity_statement: string;
   purpose_why: string;
   yearly_goal: string;
@@ -80,6 +80,7 @@ export interface AIInsights {
   frictions_detector_message: string;
   is_ai_generated: boolean;
   generated_at?: string;
+  validation_warnings?: string[]; // Track any validation issues for debugging
 }
 
 // Generate insights directly using Gemini API
@@ -90,240 +91,17 @@ async function generateInsightsWithGemini(userIdentity: UserIdentity): Promise<A
     throw new Error('Google API Key not configured');
   }
 
-  const prompt = `You are an EXPERT career mentor and personal growth coach AI for "Aligned — Your All-In-One Personal OS."
-
-CRITICAL MISSION: Generate a REALISTIC, CAREER-AWARE, ACTIONABLE yearly and quarterly execution plan that feels like it was created by a real mentor in the user's field.
-
-=== USER'S ACTUAL ONBOARDING RESPONSES ===
-- Identity Statement: "${userIdentity.identity_statement || 'Not provided'}"
-- Purpose/Why: "${userIdentity.purpose_why || 'Not provided'}"
-- Yearly Goal: "${userIdentity.yearly_goal || 'Not provided'}"
-- Daily Time Capacity: "${userIdentity.daily_time_capacity || 'Not provided'}"
-- Sleep Definition: "${userIdentity.sleep_definition || 'Not provided'}"
-- Body Care: "${userIdentity.body_care || 'Not provided'}"
-- Self Care Practice: "${userIdentity.self_care_practice || 'Not provided'}"
-- Habits Focus: "${userIdentity.habits_focus || 'Not provided'}"
-- Health Focus: "${userIdentity.health_focus || 'Not provided'}"
-- Friction Triggers: "${userIdentity.friction_triggers || 'Not provided'}"
-
-=== STRICT PLANNING RULES ===
-1. Classify the goal type: career, skill-based, academic, health, or personal development
-2. Each quarter MUST have a DIFFERENT focus building progressively toward the yearly goal
-3. Each week within a quarter MUST have a DIFFERENT focus theme
-4. Each day (Mon-Sun) MUST have a UNIQUE, SPECIFIC, actionable task
-5. NEVER use vague phrases like "research", "watch tutorials", "practice basics"
-6. ALWAYS specify WHAT to do, WHERE (platform/resource), and WHY it matters
-
-=== EXAMPLE OF QUALITY DAILY TASKS ===
-❌ BAD: "Research materials", "Watch tutorials", "Practice skills"
-✅ GOOD: "Study the official certification syllabus from [official source] and create a 12-week study schedule"
-✅ GOOD: "Complete Module 1 of [specific course] on [platform], take notes on [specific topic]"
-✅ GOOD: "Build a simple [specific project type] using [specific technology] to practice [specific skill]"
-
-=== GENERATE JSON RESPONSE ===
-{
-  "identities": [
-    {"name": "First identity derived from their identity_statement", "icon": "user", "selected": false},
-    {"name": "Second identity aspect from their statement", "icon": "briefcase", "selected": false},  
-    {"name": "Primary identity focus from their statement", "icon": "target", "selected": true}
-  ],
-  "identity_summary": "A 1-sentence summary explaining who they are becoming based on their identity_statement",
-  "my_why": "Condensed version of their purpose_why in max 8 words",
-  "yearly_goal_title": "Their yearly_goal rewritten as a clear, measurable, actionable title",
-  "quarterly_goals": [
-    {
-      "quarter": "Q1",
-      "goal": "SPECIFIC Q1 milestone (foundation phase) - what exactly will be achieved",
-      "weeklyPlan": [
-        {
-          "week": "Week 1",
-          "focus": "SPECIFIC weekly theme for week 1",
-          "days": [
-            {"day": "Mon", "task": "Specific task title", "description": "Detailed description: what exactly to do, where to find resources, expected outcome"},
-            {"day": "Tue", "task": "Different specific task", "description": "Different detailed action with clear deliverable"},
-            {"day": "Wed", "task": "Different specific task", "description": "Different detailed action with clear deliverable"},
-            {"day": "Thu", "task": "Different specific task", "description": "Different detailed action with clear deliverable"},
-            {"day": "Fri", "task": "Different specific task", "description": "Different detailed action with clear deliverable"},
-            {"day": "Sat", "task": "Application/practice task", "description": "Apply the week's learning in a practical way"},
-            {"day": "Sun", "task": "Reflection & planning", "description": "Review week's progress, journal learnings, plan next week"}
-          ]
-        },
-        {
-          "week": "Week 2",
-          "focus": "DIFFERENT weekly theme building on week 1",
-          "days": [
-            {"day": "Mon", "task": "New specific task", "description": "Detailed description different from week 1"},
-            {"day": "Tue", "task": "New specific task", "description": "Detailed description different from week 1"},
-            {"day": "Wed", "task": "New specific task", "description": "Detailed description different from week 1"},
-            {"day": "Thu", "task": "New specific task", "description": "Detailed description different from week 1"},
-            {"day": "Fri", "task": "New specific task", "description": "Detailed description different from week 1"},
-            {"day": "Sat", "task": "Application/practice task", "description": "Apply the week's learning"},
-            {"day": "Sun", "task": "Reflection & planning", "description": "Review and plan"}
-          ]
-        }
-      ]
-    },
-    {
-      "quarter": "Q2",
-      "goal": "SPECIFIC Q2 milestone (building phase) - different from Q1, advancing toward yearly goal",
-      "weeklyPlan": [
-        {
-          "week": "Week 14",
-          "focus": "SPECIFIC weekly theme for week 14",
-          "days": [
-            {"day": "Mon", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Tue", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Wed", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Thu", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Fri", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Sat", "task": "Application task", "description": "Apply learning"},
-            {"day": "Sun", "task": "Reflection", "description": "Review and plan"}
-          ]
-        },
-        {"week": "Week 15", "focus": "Week 15 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 16", "focus": "Week 16 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 17", "focus": "Week 17 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 18", "focus": "Week 18 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 19", "focus": "Week 19 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 20", "focus": "Week 20 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 21", "focus": "Week 21 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 22", "focus": "Week 22 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 23", "focus": "Week 23 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 24", "focus": "Week 24 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 25", "focus": "Week 25 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 26", "focus": "Week 26 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]}
-      ]
-    },
-    {
-      "quarter": "Q3",
-      "goal": "SPECIFIC Q3 milestone (advancing phase) - building on Q1+Q2 progress",
-      "weeklyPlan": [
-        {
-          "week": "Week 27",
-          "focus": "SPECIFIC weekly theme for week 27",
-          "days": [
-            {"day": "Mon", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Tue", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Wed", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Thu", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Fri", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Sat", "task": "Application task", "description": "Apply learning"},
-            {"day": "Sun", "task": "Reflection", "description": "Review and plan"}
-          ]
-        },
-        {"week": "Week 28", "focus": "Week 28 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 29", "focus": "Week 29 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 30", "focus": "Week 30 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 31", "focus": "Week 31 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 32", "focus": "Week 32 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 33", "focus": "Week 33 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 34", "focus": "Week 34 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 35", "focus": "Week 35 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 36", "focus": "Week 36 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 37", "focus": "Week 37 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 38", "focus": "Week 38 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 39", "focus": "Week 39 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]}
-      ]
-    },
-    {
-      "quarter": "Q4",
-      "goal": "SPECIFIC Q4 milestone (completion phase) - achieving the yearly goal",
-      "weeklyPlan": [
-        {
-          "week": "Week 40",
-          "focus": "SPECIFIC weekly theme for week 40",
-          "days": [
-            {"day": "Mon", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Tue", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Wed", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Thu", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Fri", "task": "Specific task", "description": "Detailed description"},
-            {"day": "Sat", "task": "Application task", "description": "Apply learning"},
-            {"day": "Sun", "task": "Reflection", "description": "Review and plan"}
-          ]
-        },
-        {"week": "Week 41", "focus": "Week 41 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 42", "focus": "Week 42 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 43", "focus": "Week 43 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 44", "focus": "Week 44 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 45", "focus": "Week 45 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 46", "focus": "Week 46 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 47", "focus": "Week 47 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 48", "focus": "Week 48 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 49", "focus": "Week 49 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 50", "focus": "Week 50 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 51", "focus": "Week 51 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]},
-        {"week": "Week 52", "focus": "Week 52 theme", "days": [{"day": "Mon", "task": "Task", "description": "Desc"}, {"day": "Tue", "task": "Task", "description": "Desc"}, {"day": "Wed", "task": "Task", "description": "Desc"}, {"day": "Thu", "task": "Task", "description": "Desc"}, {"day": "Fri", "task": "Task", "description": "Desc"}, {"day": "Sat", "task": "Task", "description": "Desc"}, {"day": "Sun", "task": "Reflection", "description": "Plan"}]}
-      ]
-    }
-  ],
-  "your_why_detail": "1-2 sentence expansion of their purpose_why with emotional resonance",
-  "daily_non_negotiables": [
-    {"name": "Sleep goal extracted from their sleep_definition", "icon": "moon"},
-    {"name": "Hydration goal (derive from their health context)", "icon": "droplet"},
-    {"name": "Movement goal from their body_care", "icon": "activity"},
-    {"name": "Self-care from their self_care_practice", "icon": "heart"}
-  ],
-  "weekly_plan": [
-    {"day": "Mon", "activity": "Focused deep work on primary goal (2-3 hours)"},
-    {"day": "Tue", "activity": "Skill building session with measurable output"},
-    {"day": "Wed", "activity": "Mid-week progress check, practice session"},
-    {"day": "Thu", "activity": "Network/community engagement or mentorship"},
-    {"day": "Fri", "activity": "Project work and weekly milestone completion"},
-    {"day": "Sat", "activity": "Rest, social activities, light review"},
-    {"day": "Sun", "activity": "Weekly reflection, planning next week's priorities"}
-  ],
-  "habits": [
-    {"name": "Primary habit from habits_focus", "current": 0, "target": 4, "unit": "days"},
-    {"name": "Sleep", "value": "Based on sleep_definition", "icon": "moon"},
-    {"name": "Water", "value": "2,000", "unit": "ml"}
-  ],
-  "focus_duration_minutes": 45,
-  "identity_reflection": "Personalized reflection about who they're becoming based on identity_statement (1-2 sentences)",
-  "quarter_goal": "Current quarter's goal from quarterly_goals explained in 1 sentence",
-  "focus_block_duration": "Duration like '30-45 min' based on their daily_time_capacity",
-  "focus_block_suggestion": "Why this duration works for them specifically (1 sentence)",
-  "friction_insight": "Compassionate insight about their friction_triggers and how to handle them (1-2 sentences)",
-  "identity_reinforcement": "Empowering message reinforcing their identity_statement (1 sentence)",
-  "frictions_detector_message": "You are a [derived identity]. Stay on your path!",
-  "micro_steps": [
-    {"text": "Specific action toward their yearly_goal", "type": "goal"},
-    {"text": "Action for their habits_focus", "type": "habit"},
-    {"text": "Action for their body_care or health_focus", "type": "health"}
-  ]
-}
-
-=== CRITICAL QUALITY REQUIREMENTS ===
-1. Generate ALL 13 weeks of detailed plans for EACH quarter:
-   - Q1: Week 1 through Week 13 (foundation phase)
-   - Q2: Week 14 through Week 26 (building phase)
-   - Q3: Week 27 through Week 39 (advancing phase)
-   - Q4: Week 40 through Week 52 (completion phase)
-2. Every daily task MUST be different and progress logically throughout the quarter
-3. Include real-world resources, platforms, or tools relevant to their goal
-4. Tasks should feel like advice from a real mentor in that specific field
-5. Each week must have a unique focus theme that builds on the previous week
-6. focus_duration_minutes must be a number (extract from their daily_time_capacity text, default to 45 if unclear)
-7. Return ONLY valid JSON, no markdown or extra text`;
+  // Use extracted prompt builder for separation of concerns
+  const prompt = buildInsightsPrompt(userIdentity);
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`,
+    getGeminiEndpoint(apiKey),
     {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [{ text: prompt }]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 32768,
-        }
-      }),
+      body: JSON.stringify(buildGeminiRequestBody(prompt)),
     }
   );
 
@@ -353,22 +131,61 @@ CRITICAL MISSION: Generate a REALISTIC, CAREER-AWARE, ACTIONABLE yearly and quar
   }
   cleanedText = cleanedText.trim();
 
-  const insights = JSON.parse(cleanedText);
-
-  // Ensure focus_duration_minutes is a number
-  let focusDuration = 45;
-  if (typeof insights.focus_duration_minutes === 'number') {
-    focusDuration = insights.focus_duration_minutes;
-  } else if (typeof insights.focus_duration_minutes === 'string') {
-    const parsed = parseInt(insights.focus_duration_minutes, 10);
-    if (!isNaN(parsed)) focusDuration = parsed;
+  // Check for truncation BEFORE parsing
+  if (detectTruncation(cleanedText)) {
+    console.error('[AI] Response appears truncated. Length:', cleanedText.length);
+    throw new Error('AI response was truncated. The plan may be incomplete.');
   }
 
+  // Safe JSON parsing with try-catch
+  let rawInsights: unknown;
+  try {
+    rawInsights = JSON.parse(cleanedText);
+  } catch (parseError) {
+    console.error('Failed to parse AI response as JSON:', parseError);
+    console.error('Raw response (first 500 chars):', cleanedText.substring(0, 500));
+    throw new Error('AI returned invalid JSON. Please try again.');
+  }
+
+  // ============================================
+  // ZOD SCHEMA VALIDATION (comprehensive)
+  // ============================================
+  // This validates ALL 20+ fields, not just 2
+  // Including deeply nested: quarterly_goals[0].weeklyPlan[0].days[0].task
+
+  const validationResult = validateAIInsights(rawInsights);
+
+  if (!validationResult.success) {
+    console.error('[AI Validation] Schema validation failed:', validationResult.errors);
+    throw new Error(`AI response failed validation: ${validationResult.errors?.slice(0, 3).join(', ')}`);
+  }
+
+  const insights = validationResult.data!;
+
+  // Additional deep validation for quarterly plans
+  const quarterlyValidation = validateQuarterlyPlansDepth(insights.quarterly_goals);
+  const validationWarnings: string[] = [];
+
+  if (!quarterlyValidation.valid) {
+    console.warn('[AI Validation] Some quarters have incomplete weekly plans:', quarterlyValidation.details);
+    // Don't fail, but record the warning
+    for (const [quarter, details] of Object.entries(quarterlyValidation.details)) {
+      if (!details.hasWeeklyPlan || details.avgDaysPerWeek < 3) {
+        validationWarnings.push(`${quarter}: incomplete weekly plan (${details.weekCount} weeks, avg ${details.avgDaysPerWeek.toFixed(1)} days/week)`);
+      }
+    }
+  }
+
+  // Ensure focus_duration_minutes is within bounds
+  let focusDuration = insights.focus_duration_minutes ?? 45;
+  if (focusDuration < 5) focusDuration = 5;
+  if (focusDuration > 180) focusDuration = 180;
+
   // Transform micro_steps to include completed state and id
-  const microSteps: MicroStep[] = (insights.micro_steps || []).map((step: { text: string; type: string }, index: number) => ({
+  const microSteps: MicroStep[] = (insights.micro_steps || []).map((step, index) => ({
     id: String(index + 1),
-    text: step.text,
-    type: step.type as MicroStep['type'],
+    text: step.text || '',
+    type: (step.type || 'goal') as MicroStep['type'],
     completed: false,
   }));
 
@@ -376,23 +193,24 @@ CRITICAL MISSION: Generate a REALISTIC, CAREER-AWARE, ACTIONABLE yearly and quar
     identity_reflection: insights.identity_reflection || '',
     identity_summary: insights.identity_summary || '',
     quarter_goal: insights.quarter_goal || '',
-    focus_block_duration: insights.focus_block_duration || '',
+    focus_block_duration: insights.focus_block_duration || '30-45 min',
     focus_block_suggestion: insights.focus_block_suggestion || '',
     friction_insight: insights.friction_insight || '',
     identity_reinforcement: insights.identity_reinforcement || '',
     micro_steps: microSteps,
-    identities: insights.identities || [],
+    identities: insights.identities as Identity[],
     my_why: insights.my_why || '',
-    yearly_goal_title: insights.yearly_goal_title || '',
-    quarterly_goals: insights.quarterly_goals || [],
+    yearly_goal_title: insights.yearly_goal_title,
+    quarterly_goals: insights.quarterly_goals as QuarterlyGoal[],
     your_why_detail: insights.your_why_detail || '',
-    daily_non_negotiables: insights.daily_non_negotiables || [],
-    weekly_plan: insights.weekly_plan || [],
-    habits: insights.habits || [],
+    daily_non_negotiables: (insights.daily_non_negotiables || []) as NonNegotiable[],
+    weekly_plan: (insights.weekly_plan || []) as WeeklyPlanItem[],
+    habits: (insights.habits || []) as Habit[],
     focus_duration_minutes: focusDuration,
     frictions_detector_message: insights.frictions_detector_message || '',
     is_ai_generated: true,
     generated_at: new Date().toISOString(),
+    validation_warnings: validationWarnings.length > 0 ? validationWarnings : undefined,
   };
 }
 
@@ -402,32 +220,78 @@ export function useAIInsights(userId: string | undefined) {
   const [isAligning, setIsAligning] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Cache key for this user's insights
-  const cacheKey = userId ? `aligned_insights_${userId}` : null;
+  // Ref to track current insights without causing dependency issues
+  // This avoids the stale closure problem of having `insights` in the dependency array
+  const insightsRef = useRef<AIInsights | null>(null);
 
-  // Try to load cached insights immediately
+  // Keep ref in sync with state
   useEffect(() => {
-    if (cacheKey) {
+    insightsRef.current = insights;
+  }, [insights]);
+
+  // Cache key for localStorage (fast read cache only)
+  const localCacheKey = userId ? `aligned_insights_${userId}` : null;
+
+  // Load cached insights: try localStorage first (fast), then Supabase (source of truth)
+  useEffect(() => {
+    const loadCachedInsights = async () => {
+      if (!userId) return;
+
+      // Step 1: Try localStorage for instant load (fast cache layer)
+      if (localCacheKey) {
+        try {
+          const localCached = localStorage.getItem(localCacheKey);
+          if (localCached) {
+            const parsed = JSON.parse(localCached);
+            if (parsed && parsed.identities && parsed.yearly_goal_title) {
+              setInsights(parsed);
+              setLoading(false);
+              console.log('Loaded insights from localStorage cache');
+            }
+          }
+        } catch (e) {
+          console.warn('Failed to load from localStorage:', e);
+        }
+      }
+
+      // Step 2: Verify/load from Supabase (source of truth)
       try {
-        const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          // Validate that cached insights have required fields
-          if (parsed && parsed.identities && parsed.yearly_goal_title) {
-            setInsights(parsed);
+        const { data: supabaseCache, error } = await supabase
+          .from('ai_insights_cache')
+          .select('insights, generated_at')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (error) {
+          console.warn('Error fetching from ai_insights_cache:', error);
+          return;
+        }
+
+        if (supabaseCache?.insights) {
+          const supabaseInsights = supabaseCache.insights as AIInsights;
+          // Validate the insights have required fields
+          if (supabaseInsights.identities && supabaseInsights.yearly_goal_title) {
+            setInsights(supabaseInsights);
             setLoading(false);
-            console.log('Loaded cached insights for user');
-          } else {
-            console.warn('Cached insights are invalid, will regenerate');
-            localStorage.removeItem(cacheKey);
+            console.log('Loaded insights from Supabase (source of truth)');
+
+            // Update localStorage cache for future fast loads
+            if (localCacheKey) {
+              try {
+                localStorage.setItem(localCacheKey, JSON.stringify(supabaseInsights));
+              } catch (e) {
+                // localStorage quota exceeded - non-critical
+              }
+            }
           }
         }
       } catch (e) {
-        console.warn('Failed to load cached insights:', e);
-        localStorage.removeItem(cacheKey);
+        console.warn('Error loading from Supabase cache:', e);
       }
-    }
-  }, [cacheKey]);
+    };
+
+    loadCachedInsights();
+  }, [userId, localCacheKey]);
 
   const fetchInsights = useCallback(async (retryCount = 0, forceRefresh = false) => {
     if (!userId) {
@@ -435,8 +299,9 @@ export function useAIInsights(userId: string | undefined) {
       return;
     }
 
-    // If we already have cached insights and this isn't a force refresh, skip generation
-    if (insights && !forceRefresh) {
+    // Use ref to check current insights without depending on state
+    // This prevents stale closures and infinite loops
+    if (insightsRef.current && !forceRefresh) {
       setLoading(false);
       return;
     }
@@ -543,13 +408,32 @@ export function useAIInsights(userId: string | undefined) {
 
       if (generatedInsights) {
         setInsights(generatedInsights);
-        // Cache insights for instant loading on next login
-        if (cacheKey) {
+
+        // Save to Supabase (source of truth)
+        try {
+          const { error: upsertError } = await supabase
+            .from('ai_insights_cache')
+            .upsert({
+              user_id: userId,
+              insights: generatedInsights,
+              generated_at: new Date().toISOString()
+            }, { onConflict: 'user_id' });
+
+          if (upsertError) {
+            console.warn('Failed to save insights to Supabase:', upsertError);
+          } else {
+            console.log('Saved insights to Supabase');
+          }
+        } catch (e) {
+          console.warn('Error saving to Supabase:', e);
+        }
+
+        // Also cache in localStorage for fast future loads
+        if (localCacheKey) {
           try {
-            localStorage.setItem(cacheKey, JSON.stringify(generatedInsights));
-            console.log('Cached insights for user');
+            localStorage.setItem(localCacheKey, JSON.stringify(generatedInsights));
           } catch (e) {
-            console.warn('Failed to cache insights:', e);
+            // localStorage quota exceeded - non-critical since Supabase is source of truth
           }
         }
       } else {
@@ -576,11 +460,11 @@ export function useAIInsights(userId: string | undefined) {
       }
       setIsAligning(false);
     }
-  }, [userId, isAligning, cacheKey, insights]);
+  }, [userId, localCacheKey]); // Fixed: renamed cacheKey to localCacheKey
 
   useEffect(() => {
     fetchInsights();
-  }, [userId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fetchInsights]); // Now safe to include fetchInsights since deps are correct
 
   const refetch = useCallback(() => {
     setLoading(true);

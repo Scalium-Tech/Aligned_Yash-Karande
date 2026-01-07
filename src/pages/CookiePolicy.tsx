@@ -74,7 +74,7 @@ const CookiePolicy = () => {
 
                   <h2 className="font-display text-2xl font-bold text-foreground mb-4 mt-8">Our Cookie Philosophy</h2>
                   <p className="text-muted-foreground mb-6">
-                    At Aligned, we believe in transparency and minimal data collection. We only use cookies 
+                    At AlignedOS, we believe in transparency and minimal data collection. We only use cookies 
                     that are necessary for the functioning of our service or that genuinely improve your 
                     experience. We never sell your data, and we give you control over non-essential cookies.
                   </p>

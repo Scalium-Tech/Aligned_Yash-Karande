@@ -63,7 +63,7 @@ export default function Login() {
             <Link to="/" className="inline-flex items-center mb-6">
               <img
                 src="/logo.png"
-                alt="Aligned"
+                alt="AlignedOS"
                 className="h-14 w-auto"
               />
             </Link>

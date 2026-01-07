@@ -14,7 +14,7 @@ interface Testimonial {
 
 const staticTestimonials: Testimonial[] = [
   {
-    quote: "Aligned helped me finally understand why I kept falling off track. It's not about doing more — it's about doing what matters to who I want to become.",
+    quote: "AlignedOS helped me finally understand why I kept falling off track. It's not about doing more — it's about doing what matters to who I want to become.",
     name: 'Priya Sharma',
     role: 'Computer Science Student',
     avatar: 'PS',
@@ -195,8 +195,8 @@ export function TestimonialsSection() {
                   key={index}
                   onClick={() => goToSlide(index)}
                   className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${index === currentIndex
-                      ? 'bg-primary w-8'
-                      : 'bg-primary/30 hover:bg-primary/50'
+                    ? 'bg-primary w-8'
+                    : 'bg-primary/30 hover:bg-primary/50'
                     }`}
                   aria-label={`Go to slide ${index + 1}`}
                 />

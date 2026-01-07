@@ -81,7 +81,7 @@ export default function OnboardingStep7() {
 
       toast({
         title: "You're all set!",
-        description: "Your personal space is ready. Welcome to Aligned.",
+        description: "Your personal space is ready. Welcome to AlignedOS.",
       });
 
       navigate('/dashboard');

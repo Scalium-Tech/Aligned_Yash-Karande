@@ -48,7 +48,7 @@ const RefundPolicy = () => {
                                                 7-Day Money-Back Guarantee
                                             </h3>
                                             <p className="text-muted-foreground">
-                                                We're confident you'll love Aligned! Try any paid plan risk-free. If you're not completely
+                                                We're confident you'll love AlignedOS! Try any paid plan risk-free. If you're not completely
                                                 satisfied within the first 7 days, we'll refund your payment in full - no questions asked.
                                             </p>
                                         </div>
