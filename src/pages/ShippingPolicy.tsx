@@ -101,8 +101,8 @@ const ShippingPolicy = () => {
                                     <div className="space-y-4 text-muted-foreground">
                                         <p>
                                             Our services are delivered through our secure web platform accessible at{' '}
-                                            <a href="https://aligned-yash-karande.vercel.app" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                                                aligned-yash-karande.vercel.app
+                                            <a href="https://alignedos.vercel.app" className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                                                alignedos.vercel.app
                                             </a>
                                         </p>
                                         <div className="grid sm:grid-cols-2 gap-4 mt-6">
@@ -190,6 +190,13 @@ const ShippingPolicy = () => {
                                                     className="text-primary hover:underline font-medium"
                                                 >
                                                     yashvkarande@gmail.com
+                                                </a>
+                                                <span className="text-muted-foreground">•</span>
+                                                <a
+                                                    href="tel:+919136328031"
+                                                    className="text-primary hover:underline font-medium"
+                                                >
+                                                    +91 9136328031
                                                 </a>
                                             </div>
                                         </div>
