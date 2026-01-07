@@ -1,6 +1,6 @@
 <div align="center">
 
-# ✨ Aligned - Your Personal OS
+# ✨ AlignedOS - Your Personal OS
 
 ### *Stay consistent by aligning who you are with what you do*
 
@@ -10,7 +10,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 
-🌐 **Live Demo:** [aligned-yash-karande.vercel.app](https://aligned-yash-karande.vercel.app)
+🌐 **Live Demo:** [alignedos.vercel.app](https://alignedos.vercel.app/)
 
 </div>
 
@@ -18,7 +18,7 @@
 
 ## 🎯 About
 
-**Aligned** is a modern personal productivity and identity alignment platform. Unlike traditional apps that focus only on tasks, Aligned starts with: *Who do you want to become?*
+**AlignedOS** is a modern personal productivity and identity alignment platform. Unlike traditional apps that focus only on tasks, AlignedOS starts with: *Who do you want to become?*
 
 Built for students, professionals, and creators who want to build meaningful lives — one calm, focused day at a time.
 
