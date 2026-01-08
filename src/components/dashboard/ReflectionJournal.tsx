@@ -4,9 +4,10 @@ import { BookOpen, Sparkles, Send, Smile, Meh, Frown, Loader2, ChevronDown, Chev
 import { Button } from '@/components/ui/button';
 import { useJournalSupabase } from '@/hooks/useJournalSupabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { ProFeatureGate } from '@/components/ProFeatureGate';
+import { useNavigate } from 'react-router-dom';
 
 export function ReflectionJournal() {
+    const navigate = useNavigate();
     const { user, profile } = useAuth();
     const {
         todayEntry,
@@ -692,12 +693,13 @@ Format your response in a clear, readable way. Use bullet points or numbered lis
                         </div>
                         <Button
                             onClick={() => {
-                                const pricingSection = document.getElementById('pricing');
-                                if (pricingSection) {
-                                    pricingSection.scrollIntoView({ behavior: 'smooth' });
-                                } else {
-                                    window.location.href = '/#pricing';
-                                }
+                                navigate('/');
+                                setTimeout(() => {
+                                    const pricingSection = document.getElementById('pricing');
+                                    if (pricingSection) {
+                                        pricingSection.scrollIntoView({ behavior: 'smooth' });
+                                    }
+                                }, 100);
                             }}
                             className="bg-gradient-to-r from-primary to-purple-dark hover:opacity-90 text-primary-foreground shadow-lg"
                         >
