@@ -49,13 +49,13 @@ const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 export const PLAN_PRICES = {
     monthly: {
-        amount: 100, // ₹1 in paise
-        display: '₹1',
+        amount: 72000, // ₹720 in paise
+        display: '₹720',
         description: 'Pro Monthly Plan',
     },
     yearly: {
-        amount: 1000, // ₹10 in paise
-        display: '₹10',
+        amount: 685000, // ₹6850 in paise
+        display: '₹6,850',
         description: 'Pro Yearly Plan',
     },
 };

@@ -21,8 +21,8 @@ const freePlan = {
 
 const proPlan = {
   name: 'Pro',
-  monthlyPrice: '₹1',
-  yearlyPrice: '₹10',
+  monthlyPrice: '₹720',
+  yearlyPrice: '₹6,850',
   description: 'For serious growth-seekers',
   features: [
     'AI-powered weekly planning',
@@ -135,7 +135,7 @@ export function PricingSection() {
             </span>
             {isYearly && (
               <span className="text-xs font-semibold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded-full">
-                Save ₹2
+                Save ₹1,790
               </span>
             )}
           </div>
