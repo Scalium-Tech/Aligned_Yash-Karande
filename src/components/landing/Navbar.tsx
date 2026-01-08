@@ -92,12 +92,13 @@ export function Navbar() {
                 Log In
               </Button>
             </Link>
-            <Button
-              onClick={() => scrollToSection('#pricing')}
-              className="bg-gradient-to-r from-primary to-violet hover:opacity-90 text-primary-foreground font-medium px-6 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
-            >
-              Sign Up
-            </Button>
+            <Link to="/signup">
+              <Button
+                className="bg-gradient-to-r from-primary to-violet hover:opacity-90 text-primary-foreground font-medium px-6 shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all"
+              >
+                Sign Up
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -132,12 +133,13 @@ export function Navbar() {
                     Log In
                   </Button>
                 </Link>
-                <Button
-                  onClick={() => scrollToSection('#pricing')}
-                  className="w-full bg-gradient-to-r from-primary to-violet hover:opacity-90 text-primary-foreground font-medium shadow-lg shadow-primary/20"
-                >
-                  Sign Up
-                </Button>
+                <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Button
+                    className="w-full bg-gradient-to-r from-primary to-violet hover:opacity-90 text-primary-foreground font-medium shadow-lg shadow-primary/20"
+                  >
+                    Sign Up
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

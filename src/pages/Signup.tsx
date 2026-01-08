@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { z } from 'zod';
 import { getPendingPayment, clearPendingPayment } from '@/lib/razorpay';
-import { Crown } from 'lucide-react';
+import { Crown, Mail, CheckCircle2 } from 'lucide-react';
 
 const signupSchema = z.object({
   fullName: z.string().trim().min(1, 'Full name is required').max(100, 'Name must be less than 100 characters'),
@@ -20,6 +20,7 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
   const [pendingPayment, setPendingPayment] = useState<{ paymentId: string; planType: string } | null>(null);
   const { signUp } = useAuth();
   const navigate = useNavigate();
@@ -75,15 +76,62 @@ export default function Signup() {
       clearPendingPayment();
     }
 
-    toast({
-      title: 'Account Created',
-      description: pendingPayment
-        ? 'Welcome to Pro! Let\'s complete your onboarding.'
-        : 'Welcome! Let\'s complete your onboarding.'
-    });
-
-    navigate('/onboarding/step-1');
+    // Show email confirmation message
+    setEmailSent(true);
+    setIsLoading(false);
   };
+
+  // Email confirmation sent UI
+  if (emailSent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/30 to-background px-4">
+        <div className="w-full max-w-md">
+          <div className="glass-card rounded-2xl p-8 shadow-xl text-center">
+            <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-6">
+              <Mail className="w-8 h-8 text-primary" />
+            </div>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Check Your Email</h1>
+            <p className="text-muted-foreground mb-6">
+              We've sent a confirmation link to <span className="font-medium text-foreground">{email}</span>.
+              Please click the link to verify your email and complete your registration.
+            </p>
+
+            <div className="bg-secondary/30 rounded-xl p-4 mb-6">
+              <div className="flex items-start gap-3 text-left">
+                <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                <div className="text-sm text-muted-foreground">
+                  <p className="font-medium text-foreground mb-1">What's next?</p>
+                  <ol className="list-decimal list-inside space-y-1">
+                    <li>Check your inbox (and spam folder)</li>
+                    <li>Click the confirmation link</li>
+                    <li>Complete your onboarding</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            {pendingPayment && (
+              <div className="flex items-center justify-center gap-2 text-primary mb-4">
+                <Crown size={18} />
+                <span className="font-medium text-sm">Your Pro {pendingPayment.planType} plan will be activated after confirmation</span>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <Link to="/login">
+                <Button variant="outline" className="w-full">
+                  Go to Login
+                </Button>
+              </Link>
+              <p className="text-xs text-muted-foreground">
+                Didn't receive the email? Check your spam folder or try signing up again.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/30 to-background px-4">
@@ -168,3 +216,4 @@ export default function Signup() {
     </div>
   );
 }
+
