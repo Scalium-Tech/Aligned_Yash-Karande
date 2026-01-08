@@ -45,7 +45,7 @@ export interface PaymentResult {
     error?: string;
 }
 
-const RAZORPAY_KEY_ID = 'rzp_live_Ryx8ZKSqSqykkq';
+const RAZORPAY_KEY_ID = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
 export const PLAN_PRICES = {
     monthly: {
@@ -66,6 +66,13 @@ export function initiatePayment(
     onFailure: (error: string) => void,
     userInfo?: { name?: string; email?: string }
 ): void {
+    // Validate Razorpay key is configured
+    if (!RAZORPAY_KEY_ID) {
+        console.error('Razorpay key not configured. Please set VITE_RAZORPAY_KEY_ID in your .env file.');
+        onFailure('Payment system not configured. Please contact support.');
+        return;
+    }
+
     const plan = PLAN_PRICES[planType];
 
     const options: RazorpayOptions = {
