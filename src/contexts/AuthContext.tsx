@@ -194,10 +194,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error };
     }
 
-    // Fetch profile and migrate data for existing users
+    // Fetch profile for existing users
     if (data.user) {
-      // Run data migration for existing users
-      migrateUserData(data.user.id);
+      // Run data migration in background (non-blocking)
+      setTimeout(() => migrateUserData(data.user.id), 0);
 
       const profileData = await fetchProfile(data.user.id);
       return {
