@@ -195,14 +195,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     if (data.user) {
-      // Run migration in background
+      // Run migration in background (non-blocking)
       setTimeout(() => migrateUserData(data.user.id), 0);
 
-      // Fetch profile from Supabase
-      const profileData = await fetchProfile(data.user.id);
+      // Optimistic Navigation: Fetch profile in background, navigate immediately
+      // Assume onboarding is complete for existing users (most common case)
+      // Dashboard will handle redirect if onboarding is not complete
+      setTimeout(() => fetchProfile(data.user.id), 0);
+
       return {
         error: null,
-        onboardingCompleted: profileData?.onboarding_completed ?? false
+        onboardingCompleted: true  // Optimistic: assume complete, dashboard will verify
       };
     }
 
