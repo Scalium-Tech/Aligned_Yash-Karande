@@ -108,8 +108,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Defer profile fetch with setTimeout to avoid deadlock
         if (session?.user) {
-          // For SIGNED_IN event (after email confirmation), ensure profile exists
-          if (event === 'SIGNED_IN') {
+          // Only run ensureProfile for new signups (when there's pending profile data)
+          // Skip for regular logins to avoid unnecessary DB queries
+          if (event === 'SIGNED_IN' && localStorage.getItem('pending_profile')) {
             await ensureProfile(session.user.id, session.user.user_metadata);
           }
           setTimeout(() => {
