@@ -105,16 +105,56 @@ export default function Dashboard() {
     navigate('/');
   };
 
-  if (loading) {
+  // Show skeleton while auth is loading or profile hasn't loaded yet
+  // This allows dashboard to appear immediately after login
+  if (loading || !user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/30 to-background">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
+      <DashboardLayout
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+        onLogout={() => navigate('/')}
+        userName="Loading..."
+        sectionTitle="Dashboard"
+        sectionSubtitle="Loading your data..."
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+          {/* Skeleton cards */}
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="rounded-2xl bg-card border border-border p-6 animate-pulse">
+              <div className="h-4 bg-muted rounded w-3/4 mb-4"></div>
+              <div className="h-8 bg-muted rounded w-1/2 mb-2"></div>
+              <div className="h-3 bg-muted rounded w-full"></div>
+            </div>
+          ))}
+        </div>
+      </DashboardLayout>
     );
   }
 
-  if (!user || !profile) {
-    return null;
+  // Redirect if not authenticated (after loading completes)
+  if (!profile) {
+    // Profile still loading - show skeleton in dashboard layout
+    const tempMeta = sectionMeta[activeSection] || sectionMeta.dashboard;
+    return (
+      <DashboardLayout
+        activeSection={activeSection}
+        onSectionChange={setActiveSection}
+        onLogout={handleLogout}
+        userName={user.email?.split('@')[0] || "User"}
+        sectionTitle={tempMeta.title}
+        sectionSubtitle={tempMeta.subtitle}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="rounded-2xl bg-card border border-border p-6 animate-pulse">
+              <div className="h-4 bg-muted rounded w-3/4 mb-4"></div>
+              <div className="h-8 bg-muted rounded w-1/2 mb-2"></div>
+              <div className="h-3 bg-muted rounded w-full"></div>
+            </div>
+          ))}
+        </div>
+      </DashboardLayout>
+    );
   }
 
   const currentMeta = sectionMeta[activeSection] || sectionMeta.dashboard;
