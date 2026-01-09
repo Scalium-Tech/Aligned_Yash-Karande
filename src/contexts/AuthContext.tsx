@@ -198,28 +198,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Run migration in background
       setTimeout(() => migrateUserData(data.user.id), 0);
 
-      // Check if we have cached onboarding status from previous login
-      const cachedOnboarding = localStorage.getItem(`aligned_onboarding_${data.user.id}`);
-
-      if (cachedOnboarding !== null) {
-        // Use cached status for instant navigation, fetch profile in background
-        setTimeout(() => fetchProfile(data.user.id), 0);
-        return {
-          error: null,
-          onboardingCompleted: cachedOnboarding === 'true'
-        };
-      }
-
-      // First login - need to wait for profile
+      // Fetch profile from Supabase
       const profileData = await fetchProfile(data.user.id);
-      const onboardingCompleted = profileData?.onboarding_completed ?? false;
-
-      // Cache for next time
-      localStorage.setItem(`aligned_onboarding_${data.user.id}`, String(onboardingCompleted));
-
       return {
         error: null,
-        onboardingCompleted
+        onboardingCompleted: profileData?.onboarding_completed ?? false
       };
     }
 
